@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js"
   },
-  "engines": { "node": ">=18" },
+  "engines": { "node": "22.x" },
   "dependencies": {
     "@payos/node": "^1.0.7",
     "bcryptjs": "^2.4.3",

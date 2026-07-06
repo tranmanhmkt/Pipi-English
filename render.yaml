@@ -19,5 +19,7 @@ services:
         sync: false
       - key: BASE_URL
         sync: false                  # điền https://ten-app.onrender.com sau khi deploy
+      - key: NODE_VERSION
+        value: "22.16.0"
       - key: PRO_PRICE
         value: "299000"
