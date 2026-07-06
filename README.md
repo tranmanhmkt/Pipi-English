@@ -98,3 +98,37 @@ PayOS (https://payos.vn) là cổng thanh toán QR ngân hàng phổ biến cho 
 API có sẵn: `/api/register` `/api/login` `/api/google` `/api/me` `/api/logout` `/api/progress` `/api/pay/create` `/api/pay/webhook`
 
 Chúc bạn ra mắt thành công! 🐥🚀
+
+---
+
+## 7. (MỚI) Trang quản trị Admin
+
+Địa chỉ: `https://ten-app.onrender.com/admin`
+
+**Kích hoạt:** trên Render → Environment → đặt `ADMIN_EMAILS` = email của bạn (nhiều admin cách nhau dấu phẩy). Sau đó đăng ký tài khoản bằng đúng email đó trên web, rồi vào /admin đăng nhập.
+
+Chức năng:
+- **👤 Khách hàng**: tìm kiếm, xem trạng thái, bấm **Cấp PRO / Hủy PRO** cho bất kỳ ai
+- **💰 Doanh thu**: tổng hôm nay / tháng / toàn bộ, danh sách từng đơn, nút **📥 Xuất Excel** (.xlsx)
+- **📚 Nội dung**: thêm/sửa/xóa **Lớp → Unit → Từ** với đầy đủ trường: tên, icon/emoji, mô tả, PRO, từ EN, nghĩa VI, phiên âm IPA, **hình ảnh** (emoji hoặc link ảnh), **âm thanh** (link mp3 — bỏ trống thì dùng giọng đọc en-US của máy). Sửa xong, mọi thiết bị tải lại trang là thấy nội dung mới (đồng bộ từ database).
+- **⚙️ Cài đặt**: đổi **giá PRO** — áp dụng ngay cho modal Upgrade và các đơn tiếp theo
+
+## 8. (MỚI) Thanh toán tự động SePay — QR VietQR tự sinh
+
+Luồng: khách bấm Pay now → web hiện **mã QR ngân hàng** (số tiền + nội dung `PIPIxxxxx` điền sẵn) → khách quét bằng app ngân hàng → SePay phát hiện tiền vào → gọi webhook → **PRO kích hoạt tự động trong ~3 giây**, màn hình khách tự hiện "✅ Payment received!" và pháo hoa.
+
+Cài đặt:
+1. Đăng ký https://my.sepay.vn → liên kết tài khoản ngân hàng nhận tiền của bạn.
+2. Trên Render → Environment điền:
+   - `SEPAY_BANK` = tên ngân hàng (vd `MBBank`, `VCB`, `ACB`, `TPBank`…)
+   - `SEPAY_ACC` = số tài khoản nhận tiền
+3. Trong SePay → **Webhooks → Thêm webhook**:
+   - URL: `https://ten-app.onrender.com/api/pay/webhook/sepay`
+   - Kiểu xác thực: **API Key** → tạo key → copy key đó điền vào biến `SEPAY_API_KEY` trên Render.
+4. Xong. Chưa điền đủ 3 biến SePay = hệ thống tự chạy **chế độ demo** (bấm Pay là lên PRO, không thu tiền) để bạn test.
+
+## 9. (MỚI) Ngôn ngữ & âm thanh khóa English
+
+- Toàn bộ giao diện học tập là English; giọng đọc **luôn ép chọn giọng en-US** của thiết bị (không phụ thuộc ngôn ngữ hệ điều hành/trình duyệt của khách).
+- Muốn đồng nhất 100% giọng đọc trên MỌI thiết bị: vào Admin → Nội dung → điền link **file mp3** cho từng từ (thu âm hoặc tạo bằng Google TTS) — có file thì mọi máy phát cùng một âm thanh.
+- Hoàn thành bài nào cũng có tiếng reo **"Yeeeee!"** + nhạc chiến thắng + vỗ tay.

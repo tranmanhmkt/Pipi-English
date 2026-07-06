@@ -500,7 +500,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   <div class="header">
     <button class="backBtn" onclick="go('homeScreen')">← Home</button>
     <div class="headerTitle">⌨️ Typing Practice</div>
-    <div class="headerSpace"></div>
+    <button class="backBtn" onclick="goHome()">🏠</button>
   </div>
   <div class="modeRow">
     <button class="modeBtn active" id="modeKey" onclick="setTypingMode('key')">⌨️ With Key Hints</button>
@@ -514,7 +514,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   <div class="header">
     <button class="backBtn" onclick="go('homeScreen')">← Grades</button>
     <div class="headerTitle" id="unitScreenTitle"></div>
-    <div class="headerSpace"></div>
+    <button class="backBtn" onclick="goHome()">🏠</button>
   </div>
   <div class="unitList" id="unitList"></div>
 </div>
@@ -524,7 +524,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   <div class="header">
     <button class="backBtn" onclick="go('unitScreen')">← Units</button>
     <div class="headerTitle" id="mapScreenTitle"></div>
-    <div class="headerSpace"></div>
+    <button class="backBtn" onclick="goHome()">🏠</button>
   </div>
   <div class="mapList" id="mapList"></div>
 </div>
@@ -533,6 +533,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
 <div class="screen" id="activityScreen">
   <div class="topbar">
     <button class="backBtn" onclick="quitActivity()">✕</button>
+    <button class="backBtn" onclick="goHome()">🏠</button>
     <div class="progressWrap"><div class="progressBar" id="actProgress"></div></div>
     <div class="pill" id="actCounter">1/6</div>
     <div class="pill scorePill" id="actScore">0</div>
@@ -547,6 +548,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
     <div class="endTitle" id="resTitle">Well done!</div>
     <div class="endStats" id="resStats"></div>
     <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+      <button class="btn ghost" onclick="goHome()">🏠 Home</button>
       <button class="btn ghost" onclick="replayActivity()">Play again</button>
       <button class="btn" id="resNextBtn" onclick="nextFromResult()">Continue ▶</button>
     </div>
@@ -579,13 +581,21 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
     <button class="modalClose" onclick="hideModal('payModal')">✕</button>
     <div style="font-size:54px; line-height:1;">👑</div>
     <div class="modalTitle">Upgrade to PiPi PRO</div>
-    <div class="proList">
-      ✓ All 105 units · 630 words<br>
-      ✓ All 7 typing modules<br>
-      ✓ Progress saved to your account
+    <div id="payMain">
+      <div class="proList">
+        ✓ All units & words unlocked<br>
+        ✓ All 7 typing modules<br>
+        ✓ Progress saved to your account
+      </div>
+      <div class="price"><span id="payPrice">299.000₫</span> <span>/ year</span></div>
+      <button class="btn" onclick="startPay()" style="width:100%;">Pay now 💳</button>
     </div>
-    <div class="price"><span id="payPrice">299.000₫</span> <span>/ year</span></div>
-    <button class="btn" onclick="startPay()" style="width:100%;">Pay now 💳</button>
+    <div id="payQR" style="display:none">
+      <img id="qrImg" alt="QR" style="width:230px; height:230px; border-radius:16px; border:3px solid var(--slot-border);">
+      <div style="font-weight:800; font-size:15px; margin-top:6px;">Scan with your banking app 📱</div>
+      <div class="hint">Amount & message are pre-filled — do not change them.</div>
+      <div class="feedback good" id="qrStatus" style="font-size:15px;">Waiting for payment…</div>
+    </div>
     <div class="hint" id="payHint">Secure payment</div>
   </div>
 </div>
@@ -744,9 +754,30 @@ let session = null; // trạng thái ván chơi hiện tại
 const $ = id => document.getElementById(id);
 function go(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); }
 function shuffle(a){ const arr=[...a]; for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+/* Âm thanh LUÔN là English trên mọi trình duyệt & thiết bị:
+   1) Có file audio riêng của từ → phát file. 2) Không có → ép chọn giọng en-US của máy. */
+let enVoice=null;
+function pickEnVoice(){
+  try{
+    const vs=speechSynthesis.getVoices();
+    enVoice = vs.find(v=>/en[-_]US/i.test(v.lang) && /Google|Microsoft|Samantha|Aria|Zira/i.test(v.name))
+           || vs.find(v=>/en[-_]US/i.test(v.lang))
+           || vs.find(v=>/^en/i.test(v.lang)) || null;
+  }catch(e){}
+}
+try{ speechSynthesis.onvoiceschanged=pickEnVoice; pickEnVoice(); }catch(e){}
+const AUDIO_MAP={};
+function rebuildAudioMap(){
+  for(const k in AUDIO_MAP) delete AUDIO_MAP[k];
+  CURRICULUM.forEach(g=>g.units.forEach(u=>u.words.forEach(w=>{ if(w.audio) AUDIO_MAP[w.en]=w.audio; })));
+}
 function speak(text){
-  try{ speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; u.rate=0.85;
+  try{
+    if(AUDIO_MAP[text]){ new Audio(AUDIO_MAP[text]).play().catch(()=>{}); return; }
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="en-US"; u.rate=0.85;
+    if(enVoice) u.voice=enVoice;
     speechSynthesis.speak(u);
   }catch(e){}
 }
@@ -831,8 +862,9 @@ function sndFinish(){ // hoan hô lớn: nhạc chiến thắng + vỗ tay + ti�
     [523,659,784,1047,1319].forEach((f,i)=>tone(f, i*0.12, 0.3, "triangle", 0.2));
     tone(1568, 0.62, 0.5, "triangle", 0.22);
     for(let i=0;i<14;i++) clap(0.3+i*0.09);
-    const u=new SpeechSynthesisUtterance("Yay!");
-    u.lang="en-US"; u.pitch=2; u.rate=1.1; u.volume=0.9;
+    const u=new SpeechSynthesisUtterance("Yeeeee!");
+    u.lang="en-US"; u.pitch=2; u.rate=1.05; u.volume=0.95;
+    if(enVoice) u.voice=enVoice;
     speechSynthesis.speak(u);
   }catch(e){}
 }
@@ -922,6 +954,10 @@ function startActivity(){
   $("actScore").textContent="0";
   const starters={flash:startFlash, listen:startListen, match:startMatch, anagram:startAnagram, quiz:startQuiz};
   starters[ACTIVITIES[cur.a].key]();
+}
+function goHome(){
+  speechSynthesis.cancel();
+  renderHome(); go("homeScreen");
 }
 function quitActivity(){
   speechSynthesis.cancel();
@@ -1245,15 +1281,18 @@ function pickQuiz(btn, ok, w){
 }
 
 /* ===== ⌨️ Typing Practice — 7 modules × 2 chế độ (có / không gợi ý phím) ===== */
-const ALLWORDS = CURRICULUM.flatMap(g=>g.units.flatMap(u=>u.words));
-const TYPING_MODULES = (()=>{ 
+let ALLWORDS=[], TYPING_MODULES=[];
+function buildTypingModules(){
+  ALLWORDS = CURRICULUM.flatMap(g=>g.units.flatMap(u=>u.words));
   const sizes=[30,100,100,100,100,100,100]; let off=0;
-  return sizes.map((n,i)=>{
-    const m={ i, name:"Module "+(i+1)+(i===0?" · Starter":""), from:off+1, to:off+n,
-              words:ALLWORDS.slice(off,off+n), free:i===0 };
+  TYPING_MODULES = sizes.map((n,i)=>{
+    const words=ALLWORDS.slice(off,off+n);
+    const m={ i, name:"Module "+(i+1)+(i===0?" · Starter":""), from:off+1, to:off+words.length,
+              words, free:i===0 };
     off+=n; return m;
-  });
-})();
+  }).filter(m=>m.words.length>0);
+}
+buildTypingModules();
 let typingMode="key";
 const typingProgress={};
 
@@ -1468,6 +1507,13 @@ async function api(url,body){
 async function initAuth(){
   try{ appConfig=await api("/api/config"); serverMode=true; }
   catch(e){ serverMode=false; renderUser(); return; }
+  try{
+    const cur=await api("/api/curriculum");
+    if(cur.grades && cur.grades.length){
+      CURRICULUM.splice(0, CURRICULUM.length, ...cur.grades);
+      buildTypingModules(); rebuildAudioMap(); renderHome();
+    }
+  }catch(e){}
   try{ user=await api("/api/me"); }catch(e){ user=null; }
   renderUser();
   if(user) loadCloudProgress();
@@ -1501,7 +1547,13 @@ function showPay(){
   $("payHint").textContent = appConfig.demoPay ? "Demo mode — no real charge" : "Secure payment via PayOS";
   $("payModal").style.display="flex";
 }
-function hideModal(id){ $(id).style.display="none"; }
+function hideModal(id){
+  $(id).style.display="none";
+  if(id==="payModal"){
+    clearInterval(payTimer);
+    if($("payMain")){ $("payMain").style.display="block"; $("payQR").style.display="none"; $("qrStatus").textContent="Waiting for payment…"; }
+  }
+}
 function setAuthTab(t){
   authTab=t;
   $("tabLogin").classList.toggle("active",t==="login");
@@ -1539,13 +1591,31 @@ function initGoogle(){
   };
   document.head.appendChild(s);
 }
+let payTimer=null;
 async function startPay(){
   try{
     const d=await api("/api/pay/create",{});
     if(d.demo || d.already){
       user=await api("/api/me");
       hideModal("payModal"); renderUser(); celebrate();
-    } else if(d.checkoutUrl){ location.href=d.checkoutUrl; }
+    } else if(d.qrUrl){
+      $("payMain").style.display="none";
+      $("payQR").style.display="block";
+      $("qrImg").src=d.qrUrl;
+      $("payHint").textContent="Order: "+d.code;
+      clearInterval(payTimer);
+      payTimer=setInterval(async()=>{
+        try{
+          const s=await api("/api/pay/status?oc="+d.orderCode);
+          if(s.paid){
+            clearInterval(payTimer);
+            $("qrStatus").textContent="✅ Payment received!";
+            user=await api("/api/me"); renderUser();
+            setTimeout(()=>{ hideModal("payModal"); celebrate(); }, 800);
+          }
+        }catch(e){}
+      }, 3000);
+    }
   }catch(e){ $("payHint").textContent=e.message; }
 }
 async function syncStars(k,stars){
@@ -1568,6 +1638,7 @@ async function loadCloudProgress(){
     renderHome();
   }catch(e){}
 }
+rebuildAudioMap();
 initAuth();
 
 renderHome();

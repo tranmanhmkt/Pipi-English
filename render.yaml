@@ -1,4 +1,4 @@
-# Render tự đọc file này khi bạn tạo Blueprint (New > Blueprint)
+# Render tự đọc file này khi tạo Blueprint (New > Blueprint)
 services:
   - type: web
     name: pipi-english
@@ -7,19 +7,21 @@ services:
     buildCommand: npm install
     startCommand: npm start
     envVars:
-      - key: JWT_SECRET
-        generateValue: true          # Render tự sinh chuỗi bí mật
-      - key: GOOGLE_CLIENT_ID
-        sync: false                  # bạn điền sau khi tạo trên Google Cloud
-      - key: PAYOS_CLIENT_ID
-        sync: false                  # 3 key lấy từ payos.vn (để trống = chế độ demo)
-      - key: PAYOS_API_KEY
-        sync: false
-      - key: PAYOS_CHECKSUM_KEY
-        sync: false
-      - key: BASE_URL
-        sync: false                  # điền https://ten-app.onrender.com sau khi deploy
       - key: NODE_VERSION
         value: "22.16.0"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAILS
+        sync: false        # email admin của bạn, vd: ban@gmail.com (nhiều email cách nhau dấu phẩy)
+      - key: GOOGLE_CLIENT_ID
+        sync: false        # từ Google Cloud Console
+      - key: SEPAY_BANK
+        sync: false        # tên ngân hàng nhận tiền, vd: MBBank / VCB / ACB / TPBank...
+      - key: SEPAY_ACC
+        sync: false        # số tài khoản nhận tiền
+      - key: SEPAY_API_KEY
+        sync: false        # API Key webhook tạo trong my.sepay.vn (để trống 3 biến SePay = chế độ demo)
+      - key: BASE_URL
+        sync: false        # https://ten-app.onrender.com
       - key: PRO_PRICE
         value: "299000"

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PiPi English — Quản trị</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#6B4A66;--pink:#FF9DBE;--pinkD:#F26D9D;--mint:#63C9A8;--mintD:#41A886;--bg:#FFF6E9;--line:#F6C6DC;}
+*{box-sizing:border-box;font-family:'Baloo 2',sans-serif;}
+body{margin:0;background:linear-gradient(180deg,#FFD9EA,var(--bg));color:var(--ink);min-height:100vh;padding:16px;}
+.wrap{max-width:1100px;margin:0 auto;}
+h1{font-size:26px;margin:6px 0 14px;}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.tab{border:none;cursor:pointer;font-weight:800;font-size:15px;padding:10px 18px;border-radius:14px;background:#fff;color:var(--ink);box-shadow:0 3px 0 rgba(32,53,92,.12);}
+.tab.active{background:linear-gradient(180deg,var(--pink),var(--pinkD));color:#fff;}
+.card{background:#fff;border-radius:20px;padding:18px;box-shadow:0 6px 0 rgba(32,53,92,.08);margin-bottom:14px;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{padding:8px 10px;border-bottom:1px solid #F3E3EC;text-align:left;vertical-align:middle;}
+th{font-size:12px;text-transform:uppercase;opacity:.6;}
+.btn{border:none;cursor:pointer;font-weight:800;font-size:14px;color:#fff;background:linear-gradient(180deg,var(--pink),var(--pinkD));padding:8px 16px;border-radius:999px;box-shadow:0 3px 0 #D14E81;}
+.btn.green{background:linear-gradient(180deg,var(--mint),var(--mintD));box-shadow:0 3px 0 #2F8266;}
+.btn.gray{background:#EEE;color:var(--ink);box-shadow:0 3px 0 #CCC;}
+.btn.sm{font-size:12px;padding:5px 11px;}
+.btn:active{transform:translateY(2px);}
+.inp{border:2px solid var(--line);border-radius:10px;padding:7px 10px;font-size:14px;color:var(--ink);outline:none;background:#FFFBF4;width:100%;}
+.inp:focus{border-color:var(--pink);}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.stat{flex:1;min-width:150px;background:#FFF0F6;border-radius:16px;padding:14px;text-align:center;}
+.stat b{display:block;font-size:22px;color:var(--pinkD);}
+.pill{font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;color:#fff;}
+.pill.on{background:var(--mint);} .pill.off{background:#CCC;}
+.crumb{font-size:14px;font-weight:700;margin-bottom:10px;}
+.crumb a{color:var(--pinkD);cursor:pointer;text-decoration:underline;}
+.hidden{display:none;}
+#loginBox{max-width:360px;margin:60px auto;text-align:center;}
+.msg{min-height:20px;font-size:13px;font-weight:700;color:#F0716B;}
+td .inp{min-width:70px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="loginBox" class="card">
+  <div style="font-size:50px">🐥</div>
+  <h1>PiPi Admin</h1>
+  <input class="inp" id="lEmail" type="email" placeholder="Email admin" style="margin-bottom:8px">
+  <input class="inp" id="lPass" type="password" placeholder="Mật khẩu" style="margin-bottom:8px">
+  <div class="msg" id="lMsg"></div>
+  <button class="btn" onclick="adminLogin()">Đăng nhập</button>
+  <p style="font-size:12px;opacity:.6">Tài khoản phải có email nằm trong biến ADMIN_EMAILS trên server.</p>
+</div>
+
+<div id="panel" class="hidden">
+  <h1>🐥 PiPi English — Quản trị <button class="btn gray sm" style="float:right" onclick="logout()">Đăng xuất</button></h1>
+  <div class="tabs">
+    <button class="tab active" data-t="users" onclick="showTab('users')">👤 Khách hàng</button>
+    <button class="tab" data-t="rev" onclick="showTab('rev')">💰 Doanh thu</button>
+    <button class="tab" data-t="content" onclick="showTab('content')">📚 Nội dung</button>
+    <button class="tab" data-t="set" onclick="showTab('set')">⚙️ Cài đặt</button>
+  </div>
+
+  <!-- Khách hàng -->
+  <div id="tab-users" class="card">
+    <div class="row" style="margin-bottom:10px">
+      <input class="inp" id="uSearch" placeholder="Tìm email / tên..." style="max-width:280px" onkeydown="if(event.key==='Enter')loadUsers()">
+      <button class="btn sm" onclick="loadUsers()">Tìm</button>
+    </div>
+    <table><thead><tr><th>ID</th><th>Email</th><th>Tên</th><th>PRO</th><th>Ngày tạo</th><th></th></tr></thead>
+    <tbody id="uBody"></tbody></table>
+  </div>
+
+  <!-- Doanh thu -->
+  <div id="tab-rev" class="card hidden">
+    <div class="row" style="margin-bottom:12px">
+      <div class="stat"><b id="rToday">0₫</b>Hôm nay</div>
+      <div class="stat"><b id="rMonth">0₫</b>Tháng này</div>
+      <div class="stat"><b id="rAll">0₫</b>Tổng cộng</div>
+      <div class="stat"><b id="rCount">0</b>Đơn thành công</div>
+    </div>
+    <button class="btn green" onclick="location.href='/api/admin/revenue.xlsx'">📥 Xuất Excel</button>
+    <table style="margin-top:10px"><thead><tr><th>Mã đơn</th><th>Email</th><th>Số tiền</th><th>Kênh</th><th>Trạng thái</th><th>Thời gian</th></tr></thead>
+    <tbody id="rBody"></tbody></table>
+  </div>
+
+  <!-- Nội dung -->
+  <div id="tab-content" class="card hidden">
+    <div class="crumb" id="crumb"></div>
+    <div id="cGrades"></div>
+    <div id="cUnits" class="hidden"></div>
+    <div id="cWords" class="hidden"></div>
+  </div>
+
+  <!-- Cài đặt -->
+  <div id="tab-set" class="card hidden">
+    <h3>Giá gói PRO (VND / năm)</h3>
+    <div class="row">
+      <input class="inp" id="sPrice" type="number" style="max-width:200px">
+      <button class="btn" onclick="savePrice()">Lưu giá</button>
+      <span class="msg" id="sMsg" style="color:var(--mintD)"></span>
+    </div>
+    <p style="font-size:13px;opacity:.7">Giá mới áp dụng ngay cho các lượt thanh toán tiếp theo và hiển thị trong modal Upgrade.</p>
+  </div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+async function api(url,method,body){
+  const r=await fetch(url,{method:method||"GET",headers:{"Content-Type":"application/json"},
+    credentials:"same-origin",body:body?JSON.stringify(body):undefined});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error||"Lỗi");
+  return d;
+}
+async function boot(){
+  try{ await api("/api/admin/me"); $("loginBox").classList.add("hidden"); $("panel").classList.remove("hidden"); loadUsers(); }
+  catch(e){}
+}
+async function adminLogin(){
+  try{
+    await api("/api/login","POST",{email:$("lEmail").value.trim(),password:$("lPass").value});
+    await api("/api/admin/me");
+    location.reload();
+  }catch(e){ $("lMsg").textContent = e.message==="Admin only" ? "Tài khoản này không phải admin" : e.message; }
+}
+async function logout(){ await api("/api/logout","POST",{}); location.reload(); }
+function showTab(t){
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.t===t));
+  ["users","rev","content","set"].forEach(x=>$("tab-"+x).classList.toggle("hidden",x!==t));
+  if(t==="users")loadUsers(); if(t==="rev")loadRev(); if(t==="content")loadGrades(); if(t==="set")loadSettings();
+}
+const vnd=n=>Number(n||0).toLocaleString("vi-VN")+"₫";
+
+/* ---- Khách hàng ---- */
+async function loadUsers(){
+  const d=await api("/api/admin/users?q="+encodeURIComponent($("uSearch").value||""));
+  $("uBody").innerHTML=d.users.map(u=>
+    '<tr><td>'+u.id+'</td><td>'+esc(u.email)+'</td><td>'+esc(u.name)+'</td>'+
+    '<td><span class="pill '+(u.pro?"on":"off")+'">'+(u.pro?"PRO":"Free")+'</span></td>'+
+    '<td>'+esc(u.created_at)+'</td>'+
+    '<td><button class="btn sm '+(u.pro?"gray":"green")+'" onclick="togglePro('+u.id+','+(u.pro?0:1)+')">'+
+      (u.pro?"Hủy PRO":"Cấp PRO")+'</button></td></tr>').join("");
+}
+async function togglePro(id,v){ await api("/api/admin/users/"+id+"/pro","POST",{pro:v}); loadUsers(); }
+
+/* ---- Doanh thu ---- */
+async function loadRev(){
+  const d=await api("/api/admin/revenue");
+  $("rToday").textContent=vnd(d.totals.today); $("rMonth").textContent=vnd(d.totals.month);
+  $("rAll").textContent=vnd(d.totals.all); $("rCount").textContent=d.totals.count;
+  $("rBody").innerHTML=d.rows.map(r=>
+    '<tr><td>'+r.order_code+'</td><td>'+esc(r.email)+'</td><td>'+vnd(r.amount)+'</td><td>'+esc(r.channel)+'</td>'+
+    '<td><span class="pill '+(r.status==="paid"?"on":"off")+'">'+esc(r.status)+'</span></td><td>'+esc(r.created_at)+'</td></tr>').join("");
+}
+
+/* ---- Nội dung ---- */
+let curGrade=null, curUnit=null;
+function crumb(){
+  let h='<a onclick="loadGrades()">📚 Các lớp</a>';
+  if(curGrade) h+=' › <a onclick="loadUnits(curGrade.id, curGrade.name)">'+esc(curGrade.name)+'</a>';
+  if(curUnit) h+=' › '+esc(curUnit.name);
+  $("crumb").innerHTML=h;
+}
+async function loadGrades(){
+  curGrade=null;curUnit=null;crumb();
+  $("cGrades").classList.remove("hidden"); $("cUnits").classList.add("hidden"); $("cWords").classList.add("hidden");
+  const d=await api("/api/admin/content");
+  $("cGrades").innerHTML='<button class="btn sm green" onclick="addGrade()">+ Thêm lớp</button>'+
+    '<table><thead><tr><th>Icon</th><th>Tên lớp</th><th></th></tr></thead><tbody>'+
+    d.grades.map(g=>'<tr>'+
+      '<td style="width:70px"><input class="inp" id="gi'+g.id+'" value="'+esc(g.icon)+'"></td>'+
+      '<td><input class="inp" id="gn'+g.id+'" value="'+esc(g.name)+'"></td>'+
+      '<td style="white-space:nowrap"><button class="btn sm" onclick="saveGrade('+g.id+')">Lưu</button> '+
+      '<button class="btn sm green" onclick=\'loadUnits('+g.id+',"'+esc(g.name)+'")\'>Unit ▶</button> '+
+      '<button class="btn sm gray" onclick="delGrade('+g.id+')">Xóa</button></td></tr>').join("")+'</tbody></table>';
+}
+async function addGrade(){ await api("/api/admin/grade","POST",{name:"Grade mới",icon:"🐣"}); loadGrades(); }
+async function saveGrade(id){ await api("/api/admin/grade/"+id,"PATCH",{name:$("gn"+id).value,icon:$("gi"+id).value}); }
+async function delGrade(id){ if(confirm("Xóa lớp này và TOÀN BỘ unit + từ bên trong?")){ await api("/api/admin/grade/"+id,"DELETE"); loadGrades(); } }
+
+async function loadUnits(gid,gname){
+  curGrade={id:gid,name:gname};curUnit=null;crumb();
+  $("cGrades").classList.add("hidden"); $("cUnits").classList.remove("hidden"); $("cWords").classList.add("hidden");
+  const d=await api("/api/admin/units/"+gid);
+  $("cUnits").innerHTML='<button class="btn sm green" onclick="addUnit()">+ Thêm unit</button>'+
+    '<table><thead><tr><th>Emoji</th><th>Tên unit</th><th>Mô tả</th><th>PRO</th><th></th></tr></thead><tbody>'+
+    d.units.map(u=>'<tr>'+
+      '<td style="width:70px"><input class="inp" id="ue'+u.id+'" value="'+esc(u.emoji)+'"></td>'+
+      '<td><input class="inp" id="un'+u.id+'" value="'+esc(u.name)+'"></td>'+
+      '<td><input class="inp" id="ud'+u.id+'" value="'+esc(u.description)+'"></td>'+
+      '<td style="width:50px;text-align:center"><input type="checkbox" id="up'+u.id+'" '+(u.pro?"checked":"")+'></td>'+
+      '<td style="white-space:nowrap"><button class="btn sm" onclick="saveUnit('+u.id+')">Lưu</button> '+
+      '<button class="btn sm green" onclick=\'loadWords('+u.id+',"'+esc(u.name)+'")\'>Từ ▶</button> '+
+      '<button class="btn sm gray" onclick="delUnit('+u.id+')">Xóa</button></td></tr>').join("")+'</tbody></table>';
+}
+async function addUnit(){ await api("/api/admin/unit","POST",{grade_id:curGrade.id,name:"Unit mới",emoji:"⭐",pro:1}); loadUnits(curGrade.id,curGrade.name); }
+async function saveUnit(id){ await api("/api/admin/unit/"+id,"PATCH",{name:$("un"+id).value,emoji:$("ue"+id).value,description:$("ud"+id).value,pro:$("up"+id).checked?1:0}); }
+async function delUnit(id){ if(confirm("Xóa unit này và toàn bộ từ bên trong?")){ await api("/api/admin/unit/"+id,"DELETE"); loadUnits(curGrade.id,curGrade.name); } }
+
+async function loadWords(uid,uname){
+  curUnit={id:uid,name:uname};crumb();
+  $("cGrades").classList.add("hidden"); $("cUnits").classList.add("hidden"); $("cWords").classList.remove("hidden");
+  const d=await api("/api/admin/words/"+uid);
+  $("cWords").innerHTML='<button class="btn sm green" onclick="addWord()">+ Thêm từ</button>'+
+    '<p style="font-size:12px;opacity:.7;margin:6px 0">Hình ảnh: điền emoji HOẶC link ảnh (https://...). Âm thanh: link file mp3 (bỏ trống = dùng giọng đọc máy).</p>'+
+    '<table><thead><tr><th>Từ (EN)</th><th>Nghĩa (VI)</th><th>Phiên âm IPA</th><th>Hình ảnh</th><th>Âm thanh (mp3)</th><th></th></tr></thead><tbody>'+
+    d.words.map(w=>'<tr>'+
+      '<td><input class="inp" id="we'+w.id+'" value="'+esc(w.en)+'"></td>'+
+      '<td><input class="inp" id="wv'+w.id+'" value="'+esc(w.vi)+'"></td>'+
+      '<td><input class="inp" id="wi'+w.id+'" value="'+esc(w.ipa)+'"></td>'+
+      '<td><input class="inp" id="wm'+w.id+'" value="'+esc(w.img)+'"></td>'+
+      '<td><input class="inp" id="wa'+w.id+'" value="'+esc(w.audio)+'"></td>'+
+      '<td style="white-space:nowrap"><button class="btn sm" onclick="saveWord('+w.id+')">Lưu</button> '+
+      '<button class="btn sm gray" onclick="delWord('+w.id+')">Xóa</button></td></tr>').join("")+'</tbody></table>';
+}
+async function addWord(){ await api("/api/admin/word","POST",{unit_id:curUnit.id,en:"new word",vi:"",ipa:"",img:"⭐"}); loadWords(curUnit.id,curUnit.name); }
+async function saveWord(id){ await api("/api/admin/word/"+id,"PATCH",{en:$("we"+id).value,vi:$("wv"+id).value,ipa:$("wi"+id).value,img:$("wm"+id).value,audio:$("wa"+id).value}); }
+async function delWord(id){ if(confirm("Xóa từ này?")){ await api("/api/admin/word/"+id,"DELETE"); loadWords(curUnit.id,curUnit.name); } }
+
+/* ---- Cài đặt ---- */
+async function loadSettings(){ const d=await api("/api/admin/settings"); $("sPrice").value=d.pro_price; }
+async function savePrice(){
+  try{ const d=await api("/api/admin/settings","POST",{pro_price:$("sPrice").value});
+    $("sMsg").textContent="Đã lưu: "+vnd(d.pro_price); setTimeout(()=>$("sMsg").textContent="",2500);
+  }catch(e){ $("sMsg").textContent=e.message; }
+}
+boot();
+</script>
+</body>
+</html>
