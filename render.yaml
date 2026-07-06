@@ -1,0 +1,23 @@
+# Render tự đọc file này khi bạn tạo Blueprint (New > Blueprint)
+services:
+  - type: web
+    name: pipi-english
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true          # Render tự sinh chuỗi bí mật
+      - key: GOOGLE_CLIENT_ID
+        sync: false                  # bạn điền sau khi tạo trên Google Cloud
+      - key: PAYOS_CLIENT_ID
+        sync: false                  # 3 key lấy từ payos.vn (để trống = chế độ demo)
+      - key: PAYOS_API_KEY
+        sync: false
+      - key: PAYOS_CHECKSUM_KEY
+        sync: false
+      - key: BASE_URL
+        sync: false                  # điền https://ten-app.onrender.com sau khi deploy
+      - key: PRO_PRICE
+        value: "299000"

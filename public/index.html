@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FFD9EA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<title>PiPi English — Fun English for Kids · Grade 1–5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#FFD9EA; --bg2:#FFF6E9;
+  --card:#FFFFFF; --ink:#6B4A66;
+  --tile:#63C9A8; --tile-dark:#41A886;
+  --slot:#FFF0F6; --slot-border:#F6C6DC;
+  --accent:#FF9DBE; --accent-dark:#F26D9D; --accent-shadow:#D14E81;
+  --gold:#FFC93C; --wrong:#F0716B;
+  --purple:#B79CFF; --purple-dark:#9678F0;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
+button, .tile, .chunk, .slot, .pairCard, .optCard, .quizOpt, .key, .gradeCard, .unitCard, .mapItem, .modeBtn{
+  user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+}
+html,body{margin:0; min-height:100%;}
+body{
+  font-family:'Baloo 2', system-ui, sans-serif; color:var(--ink);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,.55) 0 60px, transparent 61px),
+    radial-gradient(circle at 80% 15%, rgba(255,255,255,.5) 0 90px, transparent 91px),
+    radial-gradient(circle at 70% 78%, rgba(255,255,255,.35) 0 70px, transparent 71px),
+    linear-gradient(180deg, var(--bg1), var(--bg2) 70%);
+  display:flex; flex-direction:column; align-items:center; padding:14px; min-height:100vh;
+  min-height:100dvh;
+}
+@media (max-width:900px){
+  body{
+    padding:calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right))
+            calc(16px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  }
+}
+.screen{width:100%; max-width:800px; display:none; flex-direction:column; align-items:center; gap:14px;}
+.screen.active{display:flex;}
+
+.header{width:100%; display:flex; align-items:center; gap:10px;}
+.backBtn{
+  border:none; cursor:pointer; font-family:inherit;
+  background:rgba(255,255,255,.9); color:var(--ink);
+  font-size:17px; font-weight:700; padding:8px 18px; border-radius:999px;
+  box-shadow:0 3px 0 rgba(32,53,92,.15);
+}
+.backBtn:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(32,53,92,.15);}
+.headerTitle{flex:1; text-align:center; font-size:clamp(20px,4.5vw,28px); font-weight:800;}
+.headerSpace{width:86px;}
+.pill{
+  background:rgba(255,255,255,.9); border-radius:999px; padding:6px 14px;
+  font-weight:700; font-size:16px; box-shadow:0 2px 0 rgba(32,53,92,.12); white-space:nowrap;
+}
+.scorePill{
+  background:linear-gradient(180deg,#7BDCB9,#41A886); color:#fff;
+  box-shadow:0 3px 0 #2F8266; min-width:58px; text-align:center;
+}
+.scorePill::before{content:"⭐ ";}
+.floatPts{
+  position:fixed; transform:translateX(-50%);
+  color:#2F9E77; font-weight:800; font-size:26px;
+  font-family:'Baloo 2',sans-serif; pointer-events:none; z-index:60;
+  text-shadow:0 2px 0 rgba(255,255,255,.9);
+  animation:rise .9s ease-out forwards;
+}
+@keyframes rise{to{transform:translate(-50%,-50px); opacity:0;}}
+
+/* ===== Trang chủ: chọn lớp ===== */
+.mascot{
+  font-size:84px; line-height:1; text-align:center; margin-top:6px;
+  animation:bounce 2.2s ease-in-out infinite;
+  filter:drop-shadow(0 8px 10px rgba(107,74,102,.18));
+}
+@keyframes bounce{
+  0%,100%{transform:translateY(0) rotate(-4deg);}
+  50%{transform:translateY(-14px) rotate(4deg);}
+}
+.logo{font-size:clamp(36px,7vw,52px); font-weight:800; text-align:center;}
+.logo span{color:var(--accent-dark);}
+.logo .pi{
+  display:inline-block; color:#fff; background:var(--accent-dark);
+  padding:0 16px; border-radius:20px; transform:rotate(-3deg);
+  box-shadow:0 4px 0 var(--accent-shadow); margin-right:8px;
+}
+.tagline{font-weight:600; opacity:.65; margin-top:-6px; text-align:center;}
+.gradeGrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; width:100%;}
+.gradeCard{
+  background:var(--card); border:none; cursor:pointer; font-family:inherit; color:var(--ink);
+  border-radius:24px; padding:20px; text-align:left;
+  box-shadow:0 6px 0 rgba(32,53,92,.10), 0 14px 26px rgba(32,53,92,.12);
+  display:flex; align-items:center; gap:14px; transition:transform .1s;
+}
+.gradeCard:active{transform:translateY(3px);}
+.gradeIcon{font-size:44px;}
+.gradeName{font-size:22px; font-weight:800;}
+.gradeSub{font-size:14px; font-weight:600; opacity:.6;}
+
+/* ===== Danh sách Unit ===== */
+.unitList{display:flex; flex-direction:column; gap:12px; width:100%;}
+.unitCard{
+  background:var(--card); border:none; cursor:pointer; font-family:inherit; color:var(--ink);
+  border-radius:22px; padding:16px 20px; display:flex; align-items:center; gap:14px;
+  box-shadow:0 5px 0 rgba(32,53,92,.10); transition:transform .1s; text-align:left;
+}
+.unitCard:active{transform:translateY(3px);}
+.unitEmoji{font-size:38px;}
+.unitInfo{flex:1;}
+.unitName{font-size:19px; font-weight:800;}
+.unitWords{font-size:13px; font-weight:600; opacity:.55;}
+.unitStars{font-size:15px; font-weight:700; color:var(--accent-dark);}
+.badge{font-size:11px; font-weight:800; padding:3px 10px; border-radius:999px; color:#fff;}
+.badge.free{background:var(--tile);}
+.badge.pro{background:var(--purple);}
+
+/* ===== Bản đồ hoạt động ===== */
+.mapList{display:flex; flex-direction:column; gap:10px; width:100%; position:relative;}
+.mapItem{
+  background:var(--card); border:none; cursor:pointer; font-family:inherit; color:var(--ink);
+  border-radius:20px; padding:14px 18px; display:flex; align-items:center; gap:14px;
+  box-shadow:0 5px 0 rgba(32,53,92,.10); transition:transform .1s; text-align:left;
+}
+.mapItem:active{transform:translateY(3px);}
+.mapNum{
+  width:44px; height:44px; border-radius:50%; flex:none;
+  background:linear-gradient(180deg,var(--accent),var(--accent-dark)); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+}
+.mapItem.done .mapNum{background:linear-gradient(180deg,#4ECB8D,var(--tile-dark));}
+.mapName{flex:1; font-size:18px; font-weight:800;}
+.mapType{font-size:13px; font-weight:600; opacity:.55;}
+.mapStars{font-size:17px; letter-spacing:2px;}
+
+/* ===== Khung hoạt động ===== */
+.card{
+  width:100%; background:var(--card); border-radius:34px;
+  box-shadow:0 10px 0 rgba(32,53,92,.10), 0 22px 40px rgba(32,53,92,.14);
+  padding:22px 18px 26px; display:flex; flex-direction:column; align-items:center; gap:14px;
+}
+.topbar{width:100%; display:flex; align-items:center; gap:10px;}
+.progressWrap{flex:1; height:14px; background:rgba(32,53,92,.08); border-radius:999px; overflow:hidden;}
+.progressBar{height:100%; width:0%; background:linear-gradient(90deg,var(--gold),var(--accent)); border-radius:999px; transition:width .4s ease;}
+
+.speak{
+  border:none; cursor:pointer; background:linear-gradient(180deg,var(--purple),var(--purple-dark)); color:#fff;
+  font-size:26px; width:58px; height:58px; border-radius:50%; box-shadow:0 4px 0 #7A5CD6; transition:transform .08s;
+}
+.speak:active{transform:translateY(3px); box-shadow:0 1px 0 #7A5CD6;}
+.speak.big{width:100px; height:100px; font-size:46px;}
+
+.emoji{
+  font-size:72px; line-height:1; background:linear-gradient(180deg,#FFF6DE,#FFE9B8);
+  border-radius:24px; padding:14px 20px; box-shadow:inset 0 -4px 0 rgba(32,53,92,.08);
+}
+.meaning{font-size:clamp(26px,5.5vw,40px); font-weight:800; text-align:center;}
+.hint{font-size:14px; font-weight:600; opacity:.55; text-align:center;}
+.enWord{font-size:clamp(30px,6vw,46px); font-weight:800; color:var(--tile-dark); text-align:center;}
+
+.btn{
+  border:none; cursor:pointer; font-family:inherit; font-weight:800; font-size:20px; color:#fff;
+  background:linear-gradient(180deg,var(--accent),var(--accent-dark));
+  padding:13px 40px; border-radius:999px; box-shadow:0 5px 0 var(--accent-shadow);
+  transition:transform .08s, opacity .2s;
+}
+.btn:disabled{opacity:.4; cursor:default;}
+.btn:not(:disabled):active{transform:translateY(4px); box-shadow:0 1px 0 var(--accent-shadow);}
+.btn.ghost{background:rgba(32,53,92,.08); color:var(--ink); box-shadow:0 5px 0 rgba(32,53,92,.15);}
+
+.feedback{min-height:28px; font-size:21px; font-weight:800; text-align:center;}
+.feedback.good{color:var(--tile-dark);}
+.feedback.bad{color:var(--wrong);}
+.shake{animation:shake .4s;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.pop{animation:pop .45s;}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1)}}
+
+/* Flashcard */
+.flashcard{
+  width:min(340px,86vw); border-radius:26px; background:linear-gradient(180deg,#FFFDF6,#FFF3D6);
+  box-shadow:0 8px 0 rgba(32,53,92,.10); padding:26px 20px;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+}
+.flashEmoji{font-size:96px; line-height:1.1;}
+
+/* Nghe chọn tranh */
+.optGrid{display:grid; grid-template-columns:repeat(2,minmax(120px,160px)); gap:14px; justify-content:center;}
+.optCard{
+  border:none; cursor:pointer; font-family:inherit;
+  background:var(--slot); border-radius:22px; padding:18px 10px; font-size:56px;
+  box-shadow:0 5px 0 var(--slot-border); transition:transform .08s;
+}
+.optCard:active{transform:translateY(3px);}
+.optCard.right{background:#D9F5E6; box-shadow:0 5px 0 var(--tile);}
+.optCard.wrongPick{background:#FDE3E3; box-shadow:0 5px 0 var(--wrong);}
+
+/* Ghép cặp */
+.pairGrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; max-width:560px;}
+.pairCard{
+  border:none; cursor:pointer; font-family:inherit; color:var(--ink);
+  background:var(--slot); border-radius:16px; min-height:74px; padding:8px;
+  font-size:17px; font-weight:800; box-shadow:0 4px 0 var(--slot-border);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  transition:transform .08s, opacity .3s;
+}
+.pairCard .pe{font-size:30px;}
+.pairCard .pv{font-size:13px; font-weight:700; opacity:.75;}
+.pairCard.sel{background:#FFEFD8; box-shadow:0 4px 0 var(--gold);}
+.pairCard.matched{background:#D9F5E6; box-shadow:0 4px 0 var(--tile); opacity:.55; cursor:default;}
+
+/* Xếp chữ */
+.answerArea,.poolArea{display:flex; gap:18px; flex-wrap:wrap; justify-content:center;}
+.wordGroup{display:flex; gap:7px; padding:9px; border-radius:16px;}
+.ipa{font-size:clamp(17px,4vw,24px); font-weight:600; color:#8A6E86;}
+.wordLine{display:flex; flex-direction:row; flex-wrap:wrap; gap:16px; align-items:flex-start; justify-content:center; width:100%; padding-top:8px;}
+.wordBox{
+  position:relative; background:#FFFBF4;
+  border:3px dashed var(--slot-border); border-radius:22px;
+  padding:14px 16px 14px; min-width:150px;
+  display:flex; justify-content:center;
+  transition:border-color .3s, background .3s;
+}
+.wordBox .tick{
+  position:absolute; top:-15px; right:-11px;
+  width:40px; height:40px; border-radius:50%;
+  background:linear-gradient(180deg,#7BDCB9,var(--tile-dark)); color:#fff;
+  font-size:23px; font-weight:800;
+  display:none; align-items:center; justify-content:center;
+  box-shadow:0 3px 0 #2F8266;
+}
+.wordBox.correct{border-color:var(--tile); border-style:solid; background:#EAFBF3;}
+.wordBox.correct .tick{display:flex; animation:pop .45s;}
+.wordBox.correct .lineRow{border-bottom-color:var(--tile);}
+.wordBox .chick{
+  position:absolute; top:-30px; left:-16px; font-size:36px;
+  display:none; z-index:5; filter:drop-shadow(0 3px 4px rgba(107,74,102,.25));
+}
+.wordBox .chick.show{display:block;}
+.chick.happy{animation:chickJump .9s ease;}
+@keyframes chickJump{
+  0%,100%{transform:translateY(0) rotate(0);}
+  30%{transform:translateY(-20px) rotate(-14deg);}
+  60%{transform:translateY(-6px) rotate(12deg);}
+}
+.chick.sad{animation:sadWobble 1.1s ease;}
+@keyframes sadWobble{0%,100%{transform:rotate(0);}25%{transform:rotate(-9deg);}75%{transform:rotate(9deg);}}
+.chick .tear{
+  position:absolute; left:58%; top:52%; font-size:16px;
+  animation:tearDrop .8s ease-in infinite;
+}
+@keyframes tearDrop{0%{transform:translateY(0); opacity:1;}100%{transform:translateY(18px); opacity:0;}}
+.flower{position:fixed; font-size:22px; pointer-events:none; z-index:70; animation:flowerFly 1.05s ease-out forwards;}
+@keyframes flowerFly{to{transform:translate(var(--dx),var(--dy)) rotate(260deg); opacity:0;}}
+.lineRow{
+  display:flex; gap:8px; align-items:flex-end; justify-content:center; flex-wrap:wrap;
+  min-height:62px; min-width:min(240px,80vw); padding:4px 10px 10px;
+  border-bottom:5px dashed var(--accent-dark); border-radius:2px;
+}
+.chunk{
+  border:none; cursor:pointer; font-family:inherit;
+  padding:9px 14px; border-radius:12px; font-size:27px; font-weight:800; color:#fff;
+  letter-spacing:2px; line-height:1; transition:transform .08s; user-select:none;
+}
+.chunk:active{transform:translateY(3px);}
+.chunk.used{visibility:hidden;}
+.c0{background:#5FB8E8; box-shadow:0 4px 0 #3E92C2;}
+.c1{background:#63C9A8; box-shadow:0 4px 0 #41A886;}
+.c2{background:#FFB84D; box-shadow:0 4px 0 #E09427;}
+.c3{background:#FF9DBE; box-shadow:0 4px 0 #D14E81;}
+.c4{background:#B79CFF; box-shadow:0 4px 0 #7A5CD6;}
+.slot,.tile{
+  width:54px; height:54px; border-radius:13px; display:flex; align-items:center; justify-content:center;
+  font-size:29px; font-weight:800; color:#fff; user-select:none;
+}
+.slot{background:rgba(185,212,245,.45); color:transparent;}
+.slot.filled{background:var(--tile); color:#fff; box-shadow:0 4px 0 var(--tile-dark); cursor:pointer;}
+.tile{background:var(--tile); box-shadow:0 4px 0 var(--tile-dark); cursor:pointer; transition:transform .08s;}
+.tile:active{transform:translateY(3px); box-shadow:0 1px 0 var(--tile-dark);}
+.tile.used{visibility:hidden;}
+
+/* Trắc nghiệm */
+.quizOpts{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; width:100%; max-width:560px;}
+.quizOpt{
+  border:none; cursor:pointer; font-family:inherit; color:var(--ink);
+  background:var(--slot); border-radius:18px; padding:16px; font-size:19px; font-weight:800;
+  box-shadow:0 4px 0 var(--slot-border); transition:transform .08s;
+}
+.quizOpt:active{transform:translateY(3px);}
+.quizOpt.right{background:#D9F5E6; box-shadow:0 4px 0 var(--tile);}
+.quizOpt.wrongPick{background:#FDE3E3; box-shadow:0 4px 0 var(--wrong);}
+
+/* Kết quả */
+.stars{font-size:60px; letter-spacing:6px; text-align:center;}
+.endTitle{font-size:30px; font-weight:800; text-align:center;}
+.endStats{font-size:17px; font-weight:600; opacity:.75; text-align:center;}
+
+.brand{margin-top:14px; font-size:13px; font-weight:600; opacity:.5; text-align:center;}
+.note{
+  font-size:13px; font-weight:600; background:rgba(255,255,255,.75);
+  border-radius:14px; padding:8px 14px; text-align:center; opacity:.85;
+}
+
+img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; border-radius:10px;}
+.pairCols{display:flex; gap:26px; justify-content:center; width:100%;}
+.pairRow{display:flex; flex-direction:column; gap:12px;}
+.pairRow .pairCard{height:78px; width:170px; min-height:0; padding:6px;}
+@media (max-width:480px){ .pairRow .pairCard{width:140px; height:70px;} .pairCols{gap:14px;} }
+.imgCard .pe{font-size:42px;}
+.wordCard{font-size:19px; min-width:86px;}
+.demoRow{display:flex; align-items:center; gap:12px; justify-content:center;}
+.pairCard.demo{cursor:default; background:#EAFBF3; box-shadow:0 4px 0 var(--tile); min-width:82px;}
+.demoArrow{font-size:26px; font-weight:800; color:var(--accent-dark);}
+.tickDemo{width:34px; height:34px; border-radius:50%; background:var(--tile); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-weight:800; box-shadow:0 3px 0 var(--tile-dark);}
+.modeRow{display:flex; gap:10px; width:100%; justify-content:center;}
+.modeBtn{
+  flex:1; max-width:270px; border:none; cursor:pointer;
+  font-family:'Baloo 2',sans-serif; font-weight:800; font-size:17px; color:var(--ink);
+  background:rgba(255,255,255,.92); padding:12px; border-radius:16px;
+  box-shadow:0 4px 0 rgba(32,53,92,.12); transition:transform .08s;
+}
+.modeBtn:active{transform:translateY(2px);}
+.modeBtn.active{background:linear-gradient(180deg,var(--accent),var(--accent-dark)); color:#fff; box-shadow:0 4px 0 var(--accent-shadow);}
+.typedWrap{position:relative; padding-top:8px;}
+.typedLine{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; min-height:52px; align-items:flex-end;}
+.tSlot{
+  width:36px; height:48px; border-bottom:4px dashed var(--accent-dark);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Baloo 2',sans-serif; font-weight:800; font-size:29px; color:var(--tile-dark);
+}
+.tSlot.filled{border-bottom-style:solid; border-bottom-color:var(--tile);}
+.tSlot.caret{background:rgba(255,157,190,.2); border-radius:9px 9px 0 0;}
+.tGap{width:22px;}
+.chick.big{position:absolute; top:-36px; right:2px; font-size:38px; left:auto;}
+.kb{display:flex; flex-direction:column; gap:6px; align-items:center; width:100%;}
+.kbRow{display:flex; gap:6px; justify-content:center;}
+.key{
+  min-width:42px; height:48px; border:none; border-radius:11px; cursor:pointer;
+  background:#fff; box-shadow:0 3px 0 var(--slot-border);
+  font-family:'Baloo 2',sans-serif; font-weight:800; font-size:19px; color:var(--ink);
+  transition:transform .06s;
+}
+.key:active{transform:translateY(2px); box-shadow:0 1px 0 var(--slot-border);}
+.key.hintKey{
+  background:linear-gradient(180deg,#7BDCB9,#41A886); color:#fff;
+  box-shadow:0 3px 0 #2F8266; animation:pulseKey 1s infinite;
+}
+@keyframes pulseKey{50%{transform:scale(1.1);}}
+.key.badKey{background:#FDE3E3; box-shadow:0 3px 0 var(--wrong);}
+.key.wide{min-width:70px;}
+@media (max-width:480px){
+  .key{min-width:29px; height:42px; font-size:16px; border-radius:9px;}
+  .kbRow{gap:4px;}
+  .tSlot{width:28px; height:40px; font-size:22px;}
+}
+/* ===== iPad / tablet ===== */
+@media (min-width:481px) and (max-width:900px){
+  .screen{max-width:700px;}
+  .key{min-width:50px; height:54px; font-size:21px;}
+  .optGrid{grid-template-columns:repeat(2, minmax(150px, 200px));}
+  .pairRow .pairCard{width:190px; height:82px;}
+}
+/* ===== Điện thoại ===== */
+@media (max-width:480px){
+  .card{padding:16px 12px 20px; border-radius:26px; gap:12px;}
+  .backBtn{padding:7px 13px; font-size:15px;}
+  .headerSpace{width:58px;}
+  .headerTitle{font-size:19px;}
+  .pill{font-size:13px; padding:5px 10px;}
+  .scorePill{min-width:50px;}
+  .logo{font-size:34px;}
+  .mascot{font-size:64px;}
+  .gradeCard{padding:15px; border-radius:20px;}
+  .gradeIcon{font-size:36px;}
+  .gradeName{font-size:19px;}
+  .unitCard{padding:12px 14px; gap:10px;}
+  .unitEmoji{font-size:30px;}
+  .unitName{font-size:16px;}
+  .unitWords{font-size:11px;}
+  .mapItem{padding:11px 14px;}
+  .mapNum{width:38px; height:38px; font-size:18px;}
+  .mapName{font-size:16px;}
+  .emoji{font-size:52px; padding:10px 14px; border-radius:18px;}
+  .enWord{font-size:27px;}
+  .ipa{font-size:15px;}
+  .hint{font-size:12px;}
+  .flashcard{padding:20px 16px;}
+  .flashEmoji{font-size:76px;}
+  .speak{width:52px; height:52px; font-size:23px;}
+  .speak.big{width:82px; height:82px; font-size:36px;}
+  .btn{font-size:17px; padding:12px 30px;}
+  .optCard{font-size:44px; padding:14px 8px; border-radius:18px;}
+  .quizOpts{grid-template-columns:repeat(2,1fr); gap:9px;}
+  .quizOpt{font-size:16px; padding:12px;}
+  .chunk{font-size:22px; padding:8px 11px; border-radius:10px; letter-spacing:1px;}
+  .wordBox{padding:10px 10px 12px; min-width:118px; border-radius:18px;}
+  .wordBox .tick{width:32px; height:32px; font-size:18px; top:-12px; right:-8px;}
+  .wordBox .chick{font-size:28px; top:-24px; left:-10px;}
+  .chick.big{font-size:30px; top:-28px;}
+  .lineRow{min-height:50px; min-width:0; padding:2px 4px 8px; border-bottom-width:4px;}
+  .modeRow{flex-direction:row;}
+  .modeBtn{font-size:14px; padding:10px 6px;}
+  .stars{font-size:44px;}
+  .endTitle{font-size:23px;}
+  .feedback{font-size:17px;}
+  .demoRow{gap:8px;}
+  .floatPts{font-size:21px;}
+}
+/* Màn hình rất nhỏ (<360px) */
+@media (max-width:359px){
+  .key{min-width:26px; height:38px; font-size:14px;}
+  .pairRow .pairCard{width:124px; height:64px;}
+  .imgCard .pe{font-size:32px;}
+  .wordCard{font-size:15px;}
+}
+/* ===== Tài khoản & thanh toán ===== */
+.userRow{width:100%; display:flex; justify-content:flex-end; align-items:center; gap:8px; min-height:38px;}
+.userChip{
+  background:rgba(255,255,255,.92); border-radius:999px; padding:7px 14px;
+  font-weight:700; font-size:14px; box-shadow:0 2px 0 rgba(32,53,92,.12);
+}
+.proTag{
+  background:linear-gradient(180deg,var(--gold),#E8A800); color:#6B4A00;
+  font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px;
+}
+.miniBtn{
+  border:none; cursor:pointer; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13px;
+  background:rgba(255,255,255,.92); color:var(--ink); padding:7px 13px; border-radius:999px;
+  box-shadow:0 2px 0 rgba(32,53,92,.15); transition:transform .08s;
+}
+.miniBtn:active{transform:translateY(2px);}
+.miniBtn.gold{background:linear-gradient(180deg,var(--gold),#E8A800); color:#6B4A00; box-shadow:0 2px 0 #B98700;}
+.modalWrap{
+  position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+  background:rgba(107,74,102,.4); backdrop-filter:blur(3px); padding:16px;
+}
+.modal{
+  position:relative; background:#fff; border-radius:28px; padding:28px 24px;
+  width:min(380px,94vw); display:flex; flex-direction:column; align-items:center; gap:11px;
+  box-shadow:0 12px 0 rgba(32,53,92,.12), 0 28px 50px rgba(32,53,92,.3); text-align:center;
+}
+.modalClose{
+  position:absolute; top:12px; right:12px; border:none; cursor:pointer;
+  width:34px; height:34px; border-radius:50%; background:var(--slot);
+  font-size:16px; font-weight:800; color:var(--ink);
+}
+.modalTitle{font-size:22px; font-weight:800;}
+.authTabs{display:flex; gap:8px; width:100%;}
+.authTab{
+  flex:1; border:none; cursor:pointer; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px;
+  padding:9px; border-radius:12px; background:var(--slot); color:var(--ink);
+}
+.authTab.active{background:linear-gradient(180deg,var(--accent),var(--accent-dark)); color:#fff;}
+.inp{
+  width:100%; border:2px solid var(--slot-border); border-radius:14px;
+  padding:11px 14px; font-family:'Baloo 2',sans-serif; font-weight:600; font-size:16px; color:var(--ink);
+  outline:none; background:#FFFBF4;
+}
+.inp:focus{border-color:var(--accent);}
+.orLine{font-size:13px; font-weight:700; opacity:.5;}
+.proList{font-size:15px; font-weight:600; line-height:2; color:var(--tile-dark); text-align:left;}
+.price{font-size:32px; font-weight:800; color:var(--accent-dark);}
+.price span{font-size:15px; opacity:.6; color:var(--ink);}
+.confetti{position:fixed; top:-12px; font-size:22px; animation:fall linear forwards; pointer-events:none; z-index:50;}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg); opacity:.9;}}
+
+@media (max-width:480px){
+  .slot,.tile{width:44px; height:44px; font-size:24px;}
+  .pairGrid{grid-template-columns:repeat(3,1fr);}
+  .optGrid{grid-template-columns:repeat(2,1fr); width:100%;}
+}
+@media (prefers-reduced-motion: reduce){ .shake,.pop,.confetti{animation:none;} }
+</style>
+</head>
+<body>
+
+<!-- ===== TRANG CHỦ ===== -->
+<div class="screen active" id="homeScreen">
+  <div class="userRow" id="userRow"></div>
+  <div class="mascot">🐥</div>
+  <div class="logo"><span class="pi">PiPi</span><span>English</span></div>
+  <div class="tagline">Learn English with PiPi! · Grade 1 → Grade 5</div>
+  <div class="gradeGrid" id="gradeGrid"></div>
+  <button class="gradeCard" style="width:100%;" onclick="renderTyping(); go('typingScreen')">
+    <div class="gradeIcon">⌨️</div>
+    <div><div class="gradeName">Typing Practice</div>
+    <div class="gradeSub">7 modules · With Key Hints & No Hints · 630 words</div></div>
+  </button>
+  <div class="note">Sign in to save your progress and unlock PRO content!</div>
+  <div class="brand">🐥 PiPi English · Happy learning every day!</div>
+</div>
+
+<!-- ===== TYPING PRACTICE ===== -->
+<div class="screen" id="typingScreen">
+  <div class="header">
+    <button class="backBtn" onclick="go('homeScreen')">← Home</button>
+    <div class="headerTitle">⌨️ Typing Practice</div>
+    <div class="headerSpace"></div>
+  </div>
+  <div class="modeRow">
+    <button class="modeBtn active" id="modeKey" onclick="setTypingMode('key')">⌨️ With Key Hints</button>
+    <button class="modeBtn" id="modeNokey" onclick="setTypingMode('nokey')">🧠 No Hints</button>
+  </div>
+  <div class="unitList" id="typingList"></div>
+</div>
+
+<!-- ===== DANH SÁCH UNIT ===== -->
+<div class="screen" id="unitScreen">
+  <div class="header">
+    <button class="backBtn" onclick="go('homeScreen')">← Grades</button>
+    <div class="headerTitle" id="unitScreenTitle"></div>
+    <div class="headerSpace"></div>
+  </div>
+  <div class="unitList" id="unitList"></div>
+</div>
+
+<!-- ===== BẢN ĐỒ HOẠT ĐỘNG ===== -->
+<div class="screen" id="mapScreen">
+  <div class="header">
+    <button class="backBtn" onclick="go('unitScreen')">← Units</button>
+    <div class="headerTitle" id="mapScreenTitle"></div>
+    <div class="headerSpace"></div>
+  </div>
+  <div class="mapList" id="mapList"></div>
+</div>
+
+<!-- ===== MÀN HÌNH HOẠT ĐỘNG ===== -->
+<div class="screen" id="activityScreen">
+  <div class="topbar">
+    <button class="backBtn" onclick="quitActivity()">✕</button>
+    <div class="progressWrap"><div class="progressBar" id="actProgress"></div></div>
+    <div class="pill" id="actCounter">1/6</div>
+    <div class="pill scorePill" id="actScore">0</div>
+  </div>
+  <div class="card" id="actCard"></div>
+</div>
+
+<!-- ===== KẾT QUẢ HOẠT ĐỘNG ===== -->
+<div class="screen" id="resultScreen">
+  <div class="card">
+    <div class="stars" id="resStars">⭐⭐⭐</div>
+    <div class="endTitle" id="resTitle">Well done!</div>
+    <div class="endStats" id="resStats"></div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+      <button class="btn ghost" onclick="replayActivity()">Play again</button>
+      <button class="btn" id="resNextBtn" onclick="nextFromResult()">Continue ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal đăng nhập / đăng ký ===== -->
+<div class="modalWrap" id="authModal" style="display:none">
+  <div class="modal">
+    <button class="modalClose" onclick="hideModal('authModal')">✕</button>
+    <div style="font-size:54px; line-height:1;">🐥</div>
+    <div class="modalTitle">Welcome to PiPi English!</div>
+    <div class="authTabs">
+      <button class="authTab active" id="tabLogin" onclick="setAuthTab('login')">Sign in</button>
+      <button class="authTab" id="tabReg" onclick="setAuthTab('reg')">Register</button>
+    </div>
+    <input class="inp" id="aName" type="text" placeholder="Your name" style="display:none" autocomplete="name">
+    <input class="inp" id="aEmail" type="email" placeholder="Email" autocomplete="email">
+    <input class="inp" id="aPass" type="password" placeholder="Password (6+ characters)" autocomplete="current-password">
+    <div class="feedback bad" id="authErr" style="min-height:20px; font-size:14px;"></div>
+    <button class="btn" id="authGo" onclick="submitAuth()" style="width:100%;">Sign in</button>
+    <div class="orLine">— or —</div>
+    <div id="gBtn"></div>
+  </div>
+</div>
+
+<!-- ===== Modal nâng cấp PRO ===== -->
+<div class="modalWrap" id="payModal" style="display:none">
+  <div class="modal">
+    <button class="modalClose" onclick="hideModal('payModal')">✕</button>
+    <div style="font-size:54px; line-height:1;">👑</div>
+    <div class="modalTitle">Upgrade to PiPi PRO</div>
+    <div class="proList">
+      ✓ All 105 units · 630 words<br>
+      ✓ All 7 typing modules<br>
+      ✓ Progress saved to your account
+    </div>
+    <div class="price"><span id="payPrice">299.000₫</span> <span>/ year</span></div>
+    <button class="btn" onclick="startPay()" style="width:100%;">Pay now 💳</button>
+    <div class="hint" id="payHint">Secure payment</div>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   DỮ LIỆU LỘ TRÌNH — tách riêng để dễ mở rộng.
+   Mỗi từ: en, vi, img (emoji tạm — bản thật thay bằng URL hình minh họa)
+===================================================== */
+const W=(en,vi,img,ipa)=>({en,vi,img,ipa});
+const CURRICULUM = [
+{ grade:"Grade 1", icon:"🐤", units:[
+ {name:"Unit 1 · Animals & Things", emoji:"🐱", words:[W("cat","con mèo","🐱","/kæt/"),W("dog","con chó","🐶","/dɒɡ/"),W("ball","quả bóng","⚽","/bɔːl/"),W("sun","mặt trời","☀️","/sʌn/"),W("egg","quả trứng","🥚","/eɡ/"),W("fish","con cá","🐟","/fɪʃ/")]},
+ {name:"Unit 2 · Colors", emoji:"🌈", words:[W("red","màu đỏ","🔴","/red/"),W("blue","màu xanh dương","🔵","/bluː/"),W("green","màu xanh lá","🟢","/ɡriːn/"),W("yellow","màu vàng","🟡","/ˈjel.əʊ/"),W("pink","màu hồng","🌸","/pɪŋk/"),W("black","màu đen","⚫","/blæk/")]},
+ {name:"Unit 3 · My Body", emoji:"👀", words:[W("eye","mắt","👁️","/aɪ/"),W("ear","tai","👂","/ɪər/"),W("nose","mũi","👃","/nəʊz/"),W("mouth","miệng","👄","/maʊθ/"),W("hand","bàn tay","✋","/hænd/"),W("leg","chân","🦵","/leɡ/")]},
+ {name:"Unit 4 · Farm Animals", emoji:"🐄", pro:true, words:[W("cow","con bò","🐄","/kaʊ/"),W("pig","con lợn","🐷","/pɪɡ/"),W("hen","gà mái","🐔","/hen/"),W("duck","con vịt","🦆","/dʌk/"),W("goat","con dê","🐐","/ɡəʊt/"),W("bee","con ong","🐝","/biː/")]},
+ {name:"Unit 5 · Fruits", emoji:"🍎", pro:true, words:[W("apple","quả táo","🍎","/ˈæp.əl/"),W("banana","quả chuối","🍌","/bəˈnɑː.nə/"),W("mango","quả xoài","🥭","/ˈmæŋ.ɡəʊ/"),W("grape","quả nho","🍇","/ɡreɪp/"),W("lemon","quả chanh","🍋","/ˈlem.ən/"),W("peach","quả đào","🍑","/piːtʃ/")]},
+ {name:"Unit 6 · Toys", emoji:"🧸", pro:true, words:[W("doll","búp bê","🪆","/dɒl/"),W("kite","cái diều","🪁","/kaɪt/"),W("car","ô tô","🚗","/kɑːr/"),W("bike","xe đạp","🚲","/baɪk/"),W("drum","cái trống","🥁","/drʌm/"),W("robot","người máy","🤖","/ˈrəʊ.bɒt/")]},
+ {name:"Unit 7 · My House", emoji:"🏠", pro:true, words:[W("bed","cái giường","🛏️","/bed/"),W("door","cửa ra vào","🚪","/dɔːr/"),W("sofa","ghế sô pha","🛋️","/ˈsəʊ.fə/"),W("lamp","cái đèn","💡","/læmp/"),W("cup","cái cốc","☕","/kʌp/"),W("key","chìa khóa","🔑","/kiː/")]},
+ {name:"Unit 8 · Everyday Food", emoji:"🍚", pro:true, words:[W("rice","cơm","🍚","/raɪs/"),W("milk","sữa","🥛","/mɪlk/"),W("cake","bánh ngọt","🍰","/keɪk/"),W("bread","bánh mì","🍞","/bred/"),W("candy","kẹo","🍬","/ˈkæn.di/"),W("soup","súp","🍜","/suːp/")]},
+ {name:"Unit 9 · Nature", emoji:"🌳", pro:true, words:[W("tree","cái cây","🌳","/triː/"),W("star","ngôi sao","⭐","/stɑːr/"),W("moon","mặt trăng","🌙","/muːn/"),W("rain","mưa","🌧️","/reɪn/"),W("leaf","chiếc lá","🍃","/liːf/"),W("flower","bông hoa","🌸","/ˈflaʊ.ər/")]},
+ {name:"Unit 10 · Clothes", emoji:"👕", pro:true, words:[W("hat","cái mũ","👒","/hæt/"),W("shirt","áo sơ mi","👕","/ʃɜːt/"),W("shoes","đôi giày","👟","/ʃuːz/"),W("socks","đôi tất","🧦","/sɒks/"),W("dress","váy đầm","👗","/dres/"),W("coat","áo khoác","🧥","/kəʊt/")]},
+ {name:"Unit 11 · Actions", emoji:"🏃", pro:true, words:[W("run","chạy","🏃","/rʌn/"),W("walk","đi bộ","🚶","/wɔːk/"),W("eat","ăn","🍽️","/iːt/"),W("drink","uống","🥤","/drɪŋk/"),W("sleep","ngủ","😴","/sliːp/"),W("see","nhìn","👀","/siː/")]},
+ {name:"Unit 12 · Sea Animals", emoji:"🐠", pro:true, words:[W("crab","con cua","🦀","/kræb/"),W("shark","cá mập","🦈","/ʃɑːk/"),W("whale","cá voi","🐋","/weɪl/"),W("squid","con mực","🦑","/skwɪd/"),W("shell","vỏ sò","🐚","/ʃel/"),W("seal","hải cẩu","🦭","/siːl/")]},
+ {name:"Unit 13 · Wild Animals", emoji:"🐯", pro:true, words:[W("lion","sư tử","🦁","/ˈlaɪ.ən/"),W("tiger","con hổ","🐯","/ˈtaɪ.ɡər/"),W("bear","con gấu","🐻","/beər/"),W("monkey","con khỉ","🐵","/ˈmʌŋ.ki/"),W("snake","con rắn","🐍","/sneɪk/"),W("fox","con cáo","🦊","/fɒks/")]},
+ {name:"Unit 14 · Birds", emoji:"🐦", pro:true, words:[W("bird","con chim","🐦","/bɜːd/"),W("owl","cú mèo","🦉","/aʊl/"),W("swan","thiên nga","🦢","/swɒn/"),W("parrot","con vẹt","🦜","/ˈpær.ət/"),W("eagle","đại bàng","🦅","/ˈiː.ɡəl/"),W("penguin","chim cánh cụt","🐧","/ˈpeŋ.ɡwɪn/")]},
+ {name:"Unit 15 · Little Insects", emoji:"🐞", pro:true, words:[W("ant","con kiến","🐜","/ænt/"),W("fly","con ruồi","🪰","/flaɪ/"),W("ladybug","bọ rùa","🐞","/ˈleɪ.di.bʌɡ/"),W("spider","con nhện","🕷️","/ˈspaɪ.dər/"),W("worm","con sâu","🐛","/wɜːm/"),W("snail","ốc sên","🐌","/sneɪl/")]},
+ {name:"Unit 16 · Transport", emoji:"🚌", pro:true, words:[W("bus","xe buýt","🚌","/bʌs/"),W("train","tàu hỏa","🚂","/treɪn/"),W("boat","con thuyền","⛵","/bəʊt/"),W("plane","máy bay","✈️","/pleɪn/"),W("truck","xe tải","🚚","/trʌk/"),W("ship","con tàu","🚢","/ʃɪp/")]},
+ {name:"Unit 17 · Vegetables", emoji:"🥕", pro:true, words:[W("carrot","cà rốt","🥕","/ˈkær.ət/"),W("corn","bắp ngô","🌽","/kɔːn/"),W("potato","khoai tây","🥔","/pəˈteɪ.təʊ/"),W("tomato","cà chua","🍅","/təˈmɑː.təʊ/"),W("onion","củ hành","🧅","/ˈʌn.jən/"),W("pumpkin","quả bí ngô","🎃","/ˈpʌmp.kɪn/")]},
+ {name:"Unit 18 · At the Table", emoji:"🍴", pro:true, words:[W("spoon","cái thìa","🥄","/spuːn/"),W("fork","cái nĩa","🍴","/fɔːk/"),W("bowl","cái bát","🥣","/bəʊl/"),W("plate","cái đĩa","🍽️","/pleɪt/"),W("knife","con dao","🔪","/naɪf/"),W("chopsticks","đôi đũa","🥢","/ˈtʃɒp.stɪks/")]},
+ {name:"Unit 19 · My Feelings", emoji:"😊", pro:true, words:[W("happy","vui vẻ","😊","/ˈhæp.i/"),W("sad","buồn","😢","/sæd/"),W("angry","tức giận","😠","/ˈæŋ.ɡri/"),W("tired","mệt","🥱","/taɪəd/"),W("scared","sợ hãi","😨","/skeəd/"),W("shy","ngại ngùng","😳","/ʃaɪ/")]},
+ {name:"Unit 20 · Times of Day", emoji:"🌅", pro:true, words:[W("day","ban ngày","🌞","/deɪ/"),W("night","ban đêm","🌃","/naɪt/"),W("morning","buổi sáng","🌅","/ˈmɔː.nɪŋ/"),W("noon","buổi trưa","🕛","/nuːn/"),W("evening","buổi tối","🌆","/ˈiːv.nɪŋ/"),W("today","hôm nay","📅","/təˈdeɪ/")]},
+ {name:"Unit 21 · Fun Music", emoji:"🎵", pro:true, words:[W("piano","đàn piano","🎹","/piˈæn.əʊ/"),W("guitar","đàn ghi ta","🎸","/ɡɪˈtɑːr/"),W("bell","cái chuông","🔔","/bel/"),W("song","bài hát","🎵","/sɒŋ/"),W("violin","đàn vĩ cầm","🎻","/ˌvaɪəˈlɪn/"),W("microphone","micro","🎤","/ˈmaɪ.krə.fəʊn/")]},
+]},
+{ grade:"Grade 2", icon:"🐰", units:[
+ {name:"Unit 1 · Numbers 1–10", emoji:"🔢", words:[W("one","số một","1️⃣","/wʌn/"),W("two","số hai","2️⃣","/tuː/"),W("three","số ba","3️⃣","/θriː/"),W("four","số bốn","4️⃣","/fɔːr/"),W("five","số năm","5️⃣","/faɪv/"),W("ten","số mười","🔟","/ten/")]},
+ {name:"Unit 2 · My Family", emoji:"👨‍👩‍👧", words:[W("mother","mẹ","👩","/ˈmʌð.ər/"),W("father","bố","👨","/ˈfɑː.ðər/"),W("sister","chị / em gái","👧","/ˈsɪs.tər/"),W("brother","anh / em trai","👦","/ˈbrʌð.ər/"),W("baby","em bé","👶","/ˈbeɪ.bi/"),W("grandma","bà","👵","/ˈɡræn.mɑː/")]},
+ {name:"Unit 3 · Numbers 6–100", emoji:"💯", words:[W("six","số sáu","6️⃣","/sɪks/"),W("seven","số bảy","7️⃣","/ˈsev.ən/"),W("eight","số tám","8️⃣","/eɪt/"),W("nine","số chín","9️⃣","/naɪn/"),W("zero","số không","0️⃣","/ˈzɪə.rəʊ/"),W("hundred","một trăm","💯","/ˈhʌn.drəd/")]},
+ {name:"Unit 4 · Drinks", emoji:"🧃", pro:true, words:[W("water","nước","💧","/ˈwɔː.tər/"),W("juice","nước ép","🧃","/dʒuːs/"),W("tea","trà","🍵","/tiː/"),W("soda","nước ngọt","🥤","/ˈsəʊ.də/"),W("ice","đá lạnh","🧊","/aɪs/"),W("honey","mật ong","🍯","/ˈhʌn.i/")]},
+ {name:"Unit 5 · At the Zoo", emoji:"🐘", pro:true, words:[W("elephant","con voi","🐘","/ˈel.ɪ.fənt/"),W("giraffe","hươu cao cổ","🦒","/dʒɪˈrɑːf/"),W("zebra","ngựa vằn","🦓","/ˈzeb.rə/"),W("hippo","hà mã","🦛","/ˈhɪp.əʊ/"),W("panda","gấu trúc","🐼","/ˈpæn.də/"),W("kangaroo","chuột túi","🦘","/ˌkæŋ.ɡəˈruː/")]},
+ {name:"Unit 6 · The Sea", emoji:"🌊", pro:true, words:[W("sea","biển","🌊","/siː/"),W("sand","cát","🏖️","/sænd/"),W("island","hòn đảo","🏝️","/ˈaɪ.lənd/"),W("dolphin","cá heo","🐬","/ˈdɒl.fɪn/"),W("turtle","con rùa","🐢","/ˈtɜː.təl/"),W("octopus","bạch tuộc","🐙","/ˈɒk.tə.pəs/")]},
+ {name:"Unit 7 · Shapes", emoji:"🔺", pro:true, words:[W("circle","hình tròn","⭕","/ˈsɜː.kəl/"),W("square","hình vuông","🟥","/skweər/"),W("triangle","hình tam giác","🔺","/ˈtraɪ.æŋ.ɡəl/"),W("heart","hình trái tim","❤️","/hɑːt/"),W("diamond","kim cương","💎","/ˈdaɪ.mənd/"),W("ring","chiếc nhẫn","💍","/rɪŋ/")]},
+ {name:"Unit 8 · In the Kitchen", emoji:"🍳", pro:true, words:[W("pan","cái chảo","🍳","/pæn/"),W("pot","cái nồi","🍲","/pɒt/"),W("kettle","ấm đun nước","🫖","/ˈket.əl/"),W("sink","bồn rửa","🚰","/sɪŋk/"),W("stove","bếp lò","🔥","/stəʊv/"),W("bottle","cái chai","🍼","/ˈbɒt.əl/")]},
+ {name:"Unit 9 · On the Farm", emoji:"🚜", pro:true, words:[W("tractor","máy kéo","🚜","/ˈtræk.tər/"),W("barn","nhà kho","🛖","/bɑːn/"),W("field","cánh đồng","🌾","/fiːld/"),W("horse","con ngựa","🐴","/hɔːs/"),W("sheep","con cừu","🐑","/ʃiːp/"),W("rabbit","con thỏ","🐇","/ˈræb.ɪt/")]},
+ {name:"Unit 10 · Personal Things", emoji:"🪥", pro:true, words:[W("toothbrush","bàn chải đánh răng","🪥","/ˈtuːθ.brʌʃ/"),W("soap","xà phòng","🧼","/səʊp/"),W("mirror","cái gương","🪞","/ˈmɪr.ər/"),W("shampoo","dầu gội","🧴","/ʃæmˈpuː/"),W("tissue","khăn giấy","🧻","/ˈtɪʃ.uː/"),W("bathtub","bồn tắm","🛁","/ˈbɑːθ.tʌb/")]},
+ {name:"Unit 11 · At the Park", emoji:"🛝", pro:true, words:[W("slide","cầu trượt","🛝","/slaɪd/"),W("bench","ghế dài","🪑","/bentʃ/"),W("balloon","bóng bay","🎈","/bəˈluːn/"),W("fountain","đài phun nước","⛲","/ˈfaʊn.tɪn/"),W("grass","bãi cỏ","🌱","/ɡrɑːs/"),W("path","con đường nhỏ","🛤️","/pɑːθ/")]},
+ {name:"Unit 12 · Birthday Party", emoji:"🎁", pro:true, words:[W("gift","món quà","🎁","/ɡɪft/"),W("candle","cây nến","🕯️","/ˈkæn.dəl/"),W("party","bữa tiệc","🥳","/ˈpɑː.ti/"),W("crown","vương miện","👑","/kraʊn/"),W("card","tấm thiệp","💌","/kɑːd/"),W("cookie","bánh quy","🍪","/ˈkʊk.i/")]},
+ {name:"Unit 13 · The Sky", emoji:"🌈", pro:true, words:[W("cloud","đám mây","☁️","/klaʊd/"),W("rainbow","cầu vồng","🌈","/ˈreɪn.bəʊ/"),W("storm","cơn bão","⛈️","/stɔːm/"),W("wind","gió","🌬️","/wɪnd/"),W("snow","tuyết","☃️","/snəʊ/"),W("lightning","tia chớp","⚡","/ˈlaɪt.nɪŋ/")]},
+ {name:"Unit 14 · Everyday Jobs", emoji:"👨‍🍳", pro:true, words:[W("chef","đầu bếp","👨‍🍳","/ʃef/"),W("police","cảnh sát","👮","/pəˈliːs/"),W("fireman","lính cứu hỏa","🧑‍🚒","/ˈfaɪə.mən/"),W("dentist","nha sĩ","🦷","/ˈden.tɪst/"),W("artist","họa sĩ","👨‍🎨","/ˈɑː.tɪst/"),W("worker","công nhân","👷","/ˈwɜː.kər/")]},
+ {name:"Unit 15 · My Body 2", emoji:"💪", pro:true, words:[W("hair","tóc","💇","/heər/"),W("face","khuôn mặt","🙂","/feɪs/"),W("finger","ngón tay","👆","/ˈfɪŋ.ɡər/"),W("knee","đầu gối","🦵","/niː/"),W("tooth","cái răng","😁","/tuːθ/"),W("arm","cánh tay","💪","/ɑːm/")]},
+ {name:"Unit 16 · My School", emoji:"🌍", pro:true, words:[W("map","bản đồ","🗺️","/mæp/"),W("globe","quả địa cầu","🌍","/ɡləʊb/"),W("flag","lá cờ","🚩","/flæɡ/"),W("library","thư viện","📚","/ˈlaɪ.brər.i/"),W("playground","sân chơi","🛝","/ˈpleɪ.ɡraʊnd/"),W("computer","máy vi tính","💻","/kəmˈpjuː.tər/")]},
+ {name:"Unit 17 · Tropical Fruits", emoji:"🍉", pro:true, words:[W("watermelon","dưa hấu","🍉","/ˈwɔː.tə.mel.ən/"),W("pineapple","quả dứa","🍍","/ˈpaɪn.æp.əl/"),W("coconut","quả dừa","🥥","/ˈkəʊ.kə.nʌt/"),W("strawberry","dâu tây","🍓","/ˈstrɔː.bər.i/"),W("cherry","quả anh đào","🍒","/ˈtʃer.i/"),W("kiwi","quả kiwi","🥝","/ˈkiː.wiː/")]},
+ {name:"Unit 18 · Fun Weekend", emoji:"⛺", pro:true, words:[W("camping","cắm trại","⛺","/ˈkæm.pɪŋ/"),W("fishing","câu cá","🎣","/ˈfɪʃ.ɪŋ/"),W("picnic","dã ngoại","🧺","/ˈpɪk.nɪk/"),W("movie","xem phim","🎬","/ˈmuː.vi/"),W("shopping","mua sắm","🛍️","/ˈʃɒp.ɪŋ/"),W("hiking","leo núi","🥾","/ˈhaɪ.kɪŋ/")]},
+ {name:"Unit 19 · Opposites", emoji:"↕️", pro:true, words:[W("big","to lớn","🦣","/bɪɡ/"),W("small","nhỏ bé","🐭","/smɔːl/"),W("fast","nhanh","🚀","/fɑːst/"),W("slow","chậm","🐢","/sləʊ/"),W("tall","cao","🦒","/tɔːl/"),W("short","thấp / ngắn","🍄","/ʃɔːt/")]},
+ {name:"Unit 20 · Home Electronics", emoji:"📺", pro:true, words:[W("TV","ti vi","📺","/ˌtiːˈviː/"),W("phone","điện thoại","📱","/fəʊn/"),W("radio","đài phát thanh","📻","/ˈreɪ.di.əʊ/"),W("clock","đồng hồ","⏰","/klɒk/"),W("camera","máy ảnh","📷","/ˈkæm.rə/"),W("keyboard","bàn phím","⌨️","/ˈkiː.bɔːd/")]},
+ {name:"Unit 21 · Festivals & Tet", emoji:"🏮", pro:true, words:[W("firework","pháo hoa","🎆","/ˈfaɪə.wɜːk/"),W("lantern","đèn lồng","🏮","/ˈlæn.tən/"),W("dragon","con rồng","🐉","/ˈdræɡ.ən/"),W("envelope","phong bao","✉️","/ˈen.və.ləʊp/"),W("temple","ngôi chùa","🛕","/ˈtem.pəl/"),W("calendar","tờ lịch","📆","/ˈkæl.ən.dər/")]},
+]},
+{ grade:"Grade 3", icon:"🐼", units:[
+ {name:"Unit 1 · My Classroom", emoji:"🏫", words:[W("sit down","ngồi xuống","🪑","/ˌsɪt ˈdaʊn/"),W("stand up","đứng lên","🧍","/ˌstænd ˈʌp/"),W("hello","xin chào","👋","/heˈləʊ/"),W("listen","lắng nghe","👂","/ˈlɪs.ən/"),W("school","trường học","🏫","/skuːl/"),W("teacher","giáo viên","👩‍🏫","/ˈtiː.tʃər/")]},
+ {name:"Unit 2 · School Things", emoji:"🎒", words:[W("book","quyển sách","📚","/bʊk/"),W("pen","bút mực","🖊️","/pen/"),W("pencil","bút chì","✏️","/ˈpen.səl/"),W("ruler","thước kẻ","📏","/ˈruː.lər/"),W("bag","cặp sách","🎒","/bæɡ/"),W("eraser","cục tẩy","🧽","/ɪˈreɪ.zər/")]},
+ {name:"Unit 3 · Friends & Greetings", emoji:"🤗", words:[W("friend","người bạn","🧑‍🤝‍🧑","/frend/"),W("name","tên","📛","/neɪm/"),W("goodbye","tạm biệt","🙋","/ˌɡʊdˈbaɪ/"),W("smile","mỉm cười","😁","/smaɪl/"),W("hug","cái ôm","🤗","/hʌɡ/"),W("talk","nói chuyện","🗣️","/tɔːk/")]},
+ {name:"Unit 4 · School Subjects", emoji:"🎨", pro:true, words:[W("math","môn toán","➕","/mæθ/"),W("music","âm nhạc","🎶","/ˈmjuː.zɪk/"),W("art","mỹ thuật","🎨","/ɑːt/"),W("science","khoa học","🔬","/ˈsaɪ.əns/"),W("English","tiếng Anh","🔤","/ˈɪŋ.ɡlɪʃ/"),W("sport","thể thao","🏅","/spɔːt/")]},
+ {name:"Unit 5 · More Colors", emoji:"🟣", pro:true, words:[W("purple","màu tím","🟣","/ˈpɜː.pəl/"),W("orange","màu cam","🟠","/ˈɒr.ɪndʒ/"),W("brown","màu nâu","🟤","/braʊn/"),W("white","màu trắng","⚪","/waɪt/"),W("gray","màu xám","🌫️","/ɡreɪ/"),W("gold","màu vàng kim","🥇","/ɡəʊld/")]},
+ {name:"Unit 6 · Yummy Breakfast", emoji:"🥪", pro:true, words:[W("noodles","mì sợi","🍜","/ˈnuː.dəlz/"),W("sandwich","bánh mì kẹp","🥪","/ˈsæn.wɪdʒ/"),W("butter","bơ","🧈","/ˈbʌt.ər/"),W("jam","mứt","🫙","/dʒæm/"),W("cereal","ngũ cốc","🥣","/ˈsɪə.ri.əl/"),W("sausage","xúc xích","🌭","/ˈsɒs.ɪdʒ/")]},
+ {name:"Unit 7 · Sports", emoji:"⚽", pro:true, words:[W("soccer","bóng đá","⚽","/ˈsɒk.ər/"),W("basketball","bóng rổ","🏀","/ˈbɑː.skɪt.bɔːl/"),W("volleyball","bóng chuyền","🏐","/ˈvɒl.i.bɔːl/"),W("badminton","cầu lông","🏸","/ˈbæd.mɪn.tən/"),W("tennis","quần vợt","🎾","/ˈten.ɪs/"),W("chess","cờ vua","♟️","/tʃes/")]},
+ {name:"Unit 8 · Rooms in the House", emoji:"🛌", pro:true, words:[W("bedroom","phòng ngủ","🛌","/ˈbed.ruːm/"),W("kitchen","nhà bếp","🍳","/ˈkɪtʃ.ɪn/"),W("bathroom","phòng tắm","🚿","/ˈbɑːθ.ruːm/"),W("garden","khu vườn","🌷","/ˈɡɑː.dən/"),W("garage","nhà để xe","🚙","/ˈɡær.ɑːʒ/"),W("roof","mái nhà","🏠","/ruːf/")]},
+ {name:"Unit 9 · School Things 2", emoji:"✂️", pro:true, words:[W("notebook","quyển vở","📓","/ˈnəʊt.bʊk/"),W("crayon","bút sáp màu","🖍️","/ˈkreɪ.ɒn/"),W("scissors","cái kéo","✂️","/ˈsɪz.əz/"),W("clip","cái kẹp giấy","📎","/klɪp/"),W("marker","bút dạ","🖊️","/ˈmɑː.kər/"),W("paint","màu vẽ","🖌️","/peɪnt/")]},
+ {name:"Unit 10 · Big Family", emoji:"👨‍👩‍👧‍👦", pro:true, words:[W("grandpa","ông","👴","/ˈɡræn.pɑː/"),W("uncle","chú / bác trai","🧔","/ˈʌŋ.kəl/"),W("aunt","cô / dì","👩‍🦰","/ɑːnt/"),W("cousin","anh chị em họ","🧒","/ˈkʌz.ən/"),W("family","gia đình","👨‍👩‍👧‍👦","/ˈfæm.əl.i/"),W("twin","anh chị em sinh đôi","👯","/twɪn/")]},
+ {name:"Unit 11 · Pets", emoji:"🐹", pro:true, words:[W("hamster","chuột hamster","🐹","/ˈhæm.stər/"),W("goldfish","cá vàng","🐠","/ˈɡəʊld.fɪʃ/"),W("puppy","chó con","🐕","/ˈpʌp.i/"),W("kitten","mèo con","🐈","/ˈkɪt.ən/"),W("mouse","con chuột","🐭","/maʊs/"),W("lizard","thằn lằn","🦎","/ˈlɪz.əd/")]},
+ {name:"Unit 12 · Classroom Actions", emoji:"✍️", pro:true, words:[W("draw","vẽ","✏️","/drɔː/"),W("write","viết","✍️","/raɪt/"),W("count","đếm","🔢","/kaʊnt/"),W("spell","đánh vần","🔤","/spel/"),W("ask","hỏi","🙋","/ɑːsk/"),W("answer","trả lời","✅","/ˈɑːn.sər/")]},
+ {name:"Unit 13 · Toys & Fun", emoji:"🧩", pro:true, words:[W("puzzle","trò xếp hình","🧩","/ˈpʌz.əl/"),W("blocks","khối xếp hình","🧱","/blɒks/"),W("teddy","gấu bông","🧸","/ˈted.i/"),W("yoyo","con quay yoyo","🪀","/ˈjəʊ.jəʊ/"),W("skateboard","ván trượt","🛹","/ˈskeɪt.bɔːd/"),W("scooter","xe trượt scooter","🛴","/ˈskuː.tər/")]},
+ {name:"Unit 14 · Daily Routines", emoji:"🍱", pro:true, words:[W("breakfast","bữa sáng","🥐","/ˈbrek.fəst/"),W("lunch","bữa trưa","🍱","/lʌntʃ/"),W("dinner","bữa tối","🍽️","/ˈdɪn.ər/"),W("homework","bài tập về nhà","📝","/ˈhəʊm.wɜːk/"),W("shower","tắm vòi sen","🛀","/ˈʃaʊ.ər/"),W("bedtime","giờ đi ngủ","🌙","/ˈbed.taɪm/")]},
+ {name:"Unit 15 · Little Shopping", emoji:"👛", pro:true, words:[W("money","tiền","💵","/ˈmʌn.i/"),W("price","giá tiền","🏷️","/praɪs/"),W("cheap","rẻ","🪙","/tʃiːp/"),W("buy","mua","🛒","/baɪ/"),W("sell","bán","🏪","/sel/"),W("wallet","cái ví","👛","/ˈwɒl.ɪt/")]},
+ {name:"Unit 16 · My Health", emoji:"🤒", pro:true, words:[W("sick","bị ốm","🤒","/sɪk/"),W("cold","cảm lạnh","🤧","/kəʊld/"),W("fever","sốt","🌡️","/ˈfiː.vər/"),W("medicine","thuốc","💊","/ˈmed.sən/"),W("healthy","khỏe mạnh","🥦","/ˈhel.θi/"),W("rest","nghỉ ngơi","😌","/rest/")]},
+ {name:"Unit 17 · Places Nearby", emoji:"🏦", pro:true, words:[W("bakery","tiệm bánh","🥖","/ˈbeɪ.kər.i/"),W("pharmacy","hiệu thuốc","⚕️","/ˈfɑː.mə.si/"),W("bookstore","hiệu sách","📖","/ˈbʊk.stɔːr/"),W("café","quán cà phê","☕","/ˈkæf.eɪ/"),W("bank","ngân hàng","🏦","/bæŋk/"),W("station","nhà ga","🚉","/ˈsteɪ.ʃən/")]},
+ {name:"Unit 18 · Our Earth", emoji:"🌏", pro:true, words:[W("earth","trái đất","🌏","/ɜːθ/"),W("river","dòng sông","🏞️","/ˈrɪv.ər/"),W("mountain","ngọn núi","⛰️","/ˈmaʊn.tɪn/"),W("forest","khu rừng","🌲","/ˈfɒr.ɪst/"),W("lake","hồ nước","🛶","/leɪk/"),W("desert","sa mạc","🏜️","/ˈdez.ət/")]},
+ {name:"Unit 19 · Clothes 2", emoji:"🧣", pro:true, words:[W("jacket","áo khoác nhẹ","🧥","/ˈdʒæk.ɪt/"),W("jeans","quần bò","👖","/dʒiːnz/"),W("skirt","chân váy","👗","/skɜːt/"),W("shorts","quần đùi","🩳","/ʃɔːts/"),W("scarf","khăn quàng","🧣","/skɑːf/"),W("gloves","đôi găng tay","🧤","/ɡlʌvz/")]},
+ {name:"Unit 20 · I Can Do It!", emoji:"🧗", pro:true, words:[W("climb","leo trèo","🧗","/klaɪm/"),W("ride","đạp xe / cưỡi","🚴","/raɪd/"),W("skate","trượt băng","⛸️","/skeɪt/"),W("throw","ném","🤾","/θrəʊ/"),W("catch","bắt lấy","🥎","/kætʃ/"),W("surf","lướt sóng","🏄","/sɜːf/")]},
+ {name:"Unit 21 · My Summer", emoji:"🍦", pro:true, words:[W("summer","mùa hè","🌞","/ˈsʌm.ər/"),W("holiday","kỳ nghỉ","🏖️","/ˈhɒl.ɪ.deɪ/"),W("ice cream","kem","🍦","/ˌaɪsˈkriːm/"),W("sunglasses","kính râm","🕶️","/ˈsʌŋ.ɡlɑː.sɪz/"),W("pool","bể bơi","🏊","/puːl/"),W("ticket","tấm vé","🎫","/ˈtɪk.ɪt/")]},
+]},
+{ grade:"Grade 4", icon:"🦊", units:[
+ {name:"Unit 1 · Daily Activities", emoji:"⏰", words:[W("get up","thức dậy","⏰","/ˌɡet ˈʌp/"),W("read","đọc sách","📖","/riːd/"),W("swim","bơi lội","🏊","/swɪm/"),W("dance","nhảy múa","💃","/dɑːns/"),W("sing","ca hát","🎤","/sɪŋ/"),W("cook","nấu ăn","🍳","/kʊk/")]},
+ {name:"Unit 2 · The Weather", emoji:"⛅", words:[W("sunny","trời nắng","☀️","/ˈsʌn.i/"),W("rainy","trời mưa","🌧️","/ˈreɪ.ni/"),W("windy","trời gió","🌬️","/ˈwɪn.di/"),W("cloudy","trời nhiều mây","☁️","/ˈklaʊ.di/"),W("snowy","trời tuyết","❄️","/ˈsnəʊ.i/"),W("hot","trời nóng","🥵","/hɒt/")]},
+ {name:"Unit 3 · More Feelings", emoji:"🤩", words:[W("excited","hào hứng","🤩","/ɪkˈsaɪ.tɪd/"),W("bored","chán","🥱","/bɔːd/"),W("surprised","ngạc nhiên","😲","/səˈpraɪzd/"),W("worried","lo lắng","😟","/ˈwʌr.id/"),W("proud","tự hào","😌","/praʊd/"),W("lonely","cô đơn","🙁","/ˈləʊn.li/")]},
+ {name:"Unit 4 · World Food", emoji:"🍕", pro:true, words:[W("pizza","bánh pizza","🍕","/ˈpiːt.sə/"),W("burger","bánh burger","🍔","/ˈbɜː.ɡər/"),W("sushi","cơm cuộn sushi","🍣","/ˈsuː.ʃi/"),W("salad","rau trộn","🥗","/ˈsæl.əd/"),W("pancake","bánh kếp","🥞","/ˈpæn.keɪk/"),W("spring roll","chả giò","🌯","/ˌsprɪŋ ˈrəʊl/")]},
+ {name:"Unit 5 · Housework", emoji:"🧹", pro:true, words:[W("sweep","quét nhà","🧹","/swiːp/"),W("wash","rửa","🧽","/wɒʃ/"),W("laundry","giặt giũ","🧺","/ˈlɔːn.dri/"),W("plant","trồng cây","🪴","/plɑːnt/"),W("feed","cho ăn","🥫","/fiːd/"),W("trash","rác","🗑️","/træʃ/")]},
+ {name:"Unit 6 · More Subjects", emoji:"🧬", pro:true, words:[W("history","lịch sử","🏺","/ˈhɪs.tər.i/"),W("geography","địa lý","🗺️","/dʒiˈɒɡ.rə.fi/"),W("biology","sinh học","🧬","/baɪˈɒl.ə.dʒi/"),W("chemistry","hóa học","⚗️","/ˈkem.ɪ.stri/"),W("physics","vật lý","🧲","/ˈfɪz.ɪks/"),W("exam","kỳ thi","📝","/ɪɡˈzæm/")]},
+ {name:"Unit 7 · Jobs 2", emoji:"🧑‍🚀", pro:true, words:[W("engineer","kỹ sư","🛠️","/ˌen.dʒɪˈnɪər/"),W("dancer","vũ công","💃","/ˈdɑːn.sər/"),W("writer","nhà văn","✍️","/ˈraɪ.tər/"),W("vet","bác sĩ thú y","🐾","/vet/"),W("astronaut","phi hành gia","🧑‍🚀","/ˈæs.trə.nɔːt/"),W("judge","thẩm phán","🧑‍⚖️","/dʒʌdʒ/")]},
+ {name:"Unit 8 · Traveling", emoji:"🧳", pro:true, words:[W("passport","hộ chiếu","🛂","/ˈpɑːs.pɔːt/"),W("luggage","hành lý","🧳","/ˈlʌɡ.ɪdʒ/"),W("hotel","khách sạn","🏨","/həʊˈtel/"),W("airport","sân bay","🛫","/ˈeə.pɔːt/"),W("souvenir","quà lưu niệm","🎁","/ˌsuː.vənˈɪər/"),W("guide","hướng dẫn viên","🧭","/ɡaɪd/")]},
+ {name:"Unit 9 · Outer Space", emoji:"🪐", pro:true, words:[W("planet","hành tinh","🪐","/ˈplæn.ɪt/"),W("rocket","tên lửa","🚀","/ˈrɒk.ɪt/"),W("comet","sao chổi","☄️","/ˈkɒm.ɪt/"),W("alien","người ngoài hành tinh","👽","/ˈeɪ.li.ən/"),W("satellite","vệ tinh","🛰️","/ˈsæt.əl.aɪt/"),W("galaxy","dải ngân hà","🌌","/ˈɡæl.ək.si/")]},
+ {name:"Unit 10 · Plants & Trees", emoji:"🌵", pro:true, words:[W("seed","hạt giống","🌰","/siːd/"),W("branch","cành cây","🌿","/brɑːntʃ/"),W("bamboo","cây tre","🎋","/bæmˈbuː/"),W("cactus","xương rồng","🌵","/ˈkæk.təs/"),W("mushroom","cây nấm","🍄","/ˈmʌʃ.ruːm/"),W("palm","cây cọ / dừa","🌴","/pɑːm/")]},
+ {name:"Unit 11 · Sizes & Compare", emoji:"📏", pro:true, words:[W("heavy","nặng","🏋️","/ˈhev.i/"),W("thin","mỏng / gầy","🪶","/θɪn/"),W("thick","dày","🧱","/θɪk/"),W("wide","rộng","↔️","/waɪd/"),W("narrow","hẹp","🚪","/ˈnær.əʊ/"),W("deep","sâu","🕳️","/diːp/")]},
+ {name:"Unit 12 · Art & Music", emoji:"🎭", pro:true, words:[W("paintbrush","cọ vẽ","🎨","/ˈpeɪnt.brʌʃ/"),W("stage","sân khấu","🎭","/steɪdʒ/"),W("concert","buổi hòa nhạc","🎤","/ˈkɒn.sət/"),W("trumpet","kèn trumpet","🎺","/ˈtrʌm.pɪt/"),W("statue","bức tượng","🗽","/ˈstætʃ.uː/"),W("photo","bức ảnh","🖼️","/ˈfəʊ.təʊ/")]},
+ {name:"Unit 13 · Tech & Internet", emoji:"💻", pro:true, words:[W("email","thư điện tử","📧","/ˈiː.meɪl/"),W("website","trang web","🌐","/ˈweb.saɪt/"),W("tablet","máy tính bảng","📲","/ˈtæb.lət/"),W("game","trò chơi","🎮","/ɡeɪm/"),W("password","mật khẩu","🔑","/ˈpɑːs.wɜːd/"),W("screen","màn hình","🖥️","/skriːn/")]},
+ {name:"Unit 14 · Good Character", emoji:"😇", pro:true, words:[W("kind","tốt bụng","💗","/kaɪnd/"),W("brave","dũng cảm","🦸","/breɪv/"),W("funny","hài hước","🤣","/ˈfʌn.i/"),W("clever","thông minh","🧠","/ˈklev.ər/"),W("polite","lễ phép","🙏","/pəˈlaɪt/"),W("honest","thật thà","😇","/ˈɒn.ɪst/")]},
+ {name:"Unit 15 · Transport 2", emoji:"🚁", pro:true, words:[W("subway","tàu điện ngầm","🚇","/ˈsʌb.weɪ/"),W("taxi","xe taxi","🚕","/ˈtæk.si/"),W("ferry","phà","⛴️","/ˈfer.i/"),W("helicopter","trực thăng","🚁","/ˈhel.ɪ.kɒp.tər/"),W("ambulance","xe cứu thương","🚑","/ˈæm.bjə.ləns/"),W("motorbike","xe máy","🏍️","/ˈməʊ.tə.baɪk/")]},
+ {name:"Unit 16 · Four Seasons", emoji:"🍂", pro:true, words:[W("spring","mùa xuân","🌸","/sprɪŋ/"),W("autumn","mùa thu","🍂","/ˈɔː.təm/"),W("winter","mùa đông","⛄","/ˈwɪn.tər/"),W("season","mùa","🍁","/ˈsiː.zən/"),W("harvest","vụ thu hoạch","🌾","/ˈhɑː.vɪst/"),W("festival","lễ hội","🎪","/ˈfes.tɪ.vəl/")]},
+ {name:"Unit 17 · At the Supermarket", emoji:"🏬", pro:true, words:[W("supermarket","siêu thị","🏬","/ˈsuː.pə.mɑː.kɪt/"),W("cashier","thu ngân","🧾","/kæʃˈɪər/"),W("basket","giỏ hàng","🛒","/ˈbɑː.skɪt/"),W("discount","giảm giá","💸","/ˈdɪs.kaʊnt/"),W("customer","khách hàng","🙋‍♀️","/ˈkʌs.tə.mər/"),W("receipt","hóa đơn","📃","/rɪˈsiːt/")]},
+ {name:"Unit 18 · Healthy Moves", emoji:"🧘", pro:true, words:[W("stretch","giãn cơ","🤸","/stretʃ/"),W("exercise","tập thể dục","⛹️","/ˈek.sə.saɪz/"),W("breathe","hít thở","😮‍💨","/briːð/"),W("muscle","cơ bắp","💪","/ˈmʌs.əl/"),W("bone","xương","🦴","/bəʊn/"),W("yoga","yoga","🧘","/ˈjəʊ.ɡə/")]},
+ {name:"Unit 19 · The World Around", emoji:"🏙️", pro:true, words:[W("country","đất nước","🌍","/ˈkʌn.tri/"),W("city","thành phố","🏙️","/ˈsɪt.i/"),W("village","làng quê","🏘️","/ˈvɪl.ɪdʒ/"),W("bridge","cây cầu","🌉","/brɪdʒ/"),W("tower","tòa tháp","🗼","/ˈtaʊ.ər/"),W("street","con phố","🛣️","/striːt/")]},
+ {name:"Unit 20 · Hobbies", emoji:"🎯", pro:true, words:[W("hobby","sở thích","🎯","/ˈhɒb.i/"),W("collect","sưu tầm","🪙","/kəˈlekt/"),W("bake","nướng bánh","🧁","/beɪk/"),W("knit","đan len","🧶","/nɪt/"),W("sketch","phác họa","🖍️","/sketʃ/"),W("origami","gấp giấy origami","🦢","/ˌɒr.ɪˈɡɑː.mi/")]},
+ {name:"Unit 21 · Protect Nature", emoji:"♻️", pro:true, words:[W("recycle","tái chế","♻️","/ˌriːˈsaɪ.kəl/"),W("plastic","nhựa","🥤","/ˈplæs.tɪk/"),W("energy","năng lượng","⚡","/ˈen.ə.dʒi/"),W("pollution","ô nhiễm","🏭","/pəˈluː.ʃən/"),W("clean","sạch sẽ","🧼","/kliːn/"),W("nature","thiên nhiên","🍀","/ˈneɪ.tʃər/")]},
+]},
+{ grade:"Grade 5", icon:"🦁", units:[
+ {name:"Unit 1 · Places in the City", emoji:"🏙️", words:[W("hospital","bệnh viện","🏥","/ˈhɒs.pɪ.təl/"),W("market","chợ","🛒","/ˈmɑː.kɪt/"),W("museum","bảo tàng","🏛️","/mjuːˈziː.əm/"),W("cinema","rạp chiếu phim","🎬","/ˈsɪn.ə.mə/"),W("park","công viên","🌳","/pɑːk/"),W("zoo","sở thú","🦁","/zuː/")]},
+ {name:"Unit 2 · Jobs", emoji:"🧑‍⚕️", words:[W("doctor","bác sĩ","🧑‍⚕️","/ˈdɒk.tər/"),W("farmer","nông dân","🧑‍🌾","/ˈfɑː.mər/"),W("driver","tài xế","🚗","/ˈdraɪ.vər/"),W("nurse","y tá","👩‍⚕️","/nɜːs/"),W("pilot","phi công","🧑‍✈️","/ˈpaɪ.lət/"),W("singer","ca sĩ","🎙️","/ˈsɪŋ.ər/")]},
+ {name:"Unit 3 · School & Exams", emoji:"🅰️", words:[W("subject","môn học","📚","/ˈsʌb.dʒɪkt/"),W("grade","điểm số","🅰️","/ɡreɪd/"),W("uniform","đồng phục","👔","/ˈjuː.nɪ.fɔːm/"),W("timetable","thời khóa biểu","🗓️","/ˈtaɪmˌteɪ.bəl/"),W("semester","học kỳ","📅","/sɪˈmes.tər/"),W("classmate","bạn cùng lớp","🧑‍🤝‍🧑","/ˈklɑːs.meɪt/")]},
+ {name:"Unit 4 · Health & Hospital", emoji:"💉", pro:true, words:[W("headache","đau đầu","🤕","/ˈhed.eɪk/"),W("toothache","đau răng","🦷","/ˈtuːθ.eɪk/"),W("stomachache","đau bụng","🤢","/ˈstʌm.ək.eɪk/"),W("injection","mũi tiêm","💉","/ɪnˈdʒek.ʃən/"),W("bandage","băng gạc","🩹","/ˈbæn.dɪdʒ/"),W("patient","bệnh nhân","🛌","/ˈpeɪ.ʃənt/")]},
+ {name:"Unit 5 · Road Safety", emoji:"🚦", pro:true, words:[W("traffic","giao thông","🚦","/ˈtræf.ɪk/"),W("crosswalk","vạch qua đường","🚸","/ˈkrɒs.wɔːk/"),W("helmet","mũ bảo hiểm","⛑️","/ˈhel.mət/"),W("signal","tín hiệu","🚥","/ˈsɪɡ.nəl/"),W("sidewalk","vỉa hè","🚶","/ˈsaɪd.wɔːk/"),W("corner","góc đường","📐","/ˈkɔː.nər/")]},
+ {name:"Unit 6 · Let's Cook", emoji:"🍟", pro:true, words:[W("recipe","công thức nấu ăn","📜","/ˈres.ɪ.pi/"),W("ingredient","nguyên liệu","🧂","/ɪnˈɡriː.di.ənt/"),W("boil","luộc / đun sôi","♨️","/bɔɪl/"),W("fry","chiên rán","🍟","/fraɪ/"),W("grill","nướng vỉ","🍖","/ɡrɪl/"),W("mix","trộn","🥄","/mɪks/")]},
+ {name:"Unit 7 · Animal World", emoji:"🐊", pro:true, words:[W("insect","côn trùng","🦗","/ˈɪn.sekt/"),W("mammal","động vật có vú","🐋","/ˈmæm.əl/"),W("reptile","loài bò sát","🐊","/ˈrep.taɪl/"),W("feather","lông vũ","🪶","/ˈfeð.ər/"),W("tail","cái đuôi","🐒","/teɪl/"),W("wing","đôi cánh","🕊️","/wɪŋ/")]},
+ {name:"Unit 8 · History & Legends", emoji:"🏰", pro:true, words:[W("king","nhà vua","🤴","/kɪŋ/"),W("queen","nữ hoàng","👸","/kwiːn/"),W("castle","lâu đài","🏰","/ˈkɑː.səl/"),W("ancient","cổ xưa","🏛️","/ˈeɪn.ʃənt/"),W("treasure","kho báu","💰","/ˈtreʒ.ər/"),W("hero","người anh hùng","🦸","/ˈhɪə.rəʊ/")]},
+ {name:"Unit 9 · Talking & Opinions", emoji:"💬", pro:true, words:[W("opinion","ý kiến","💬","/əˈpɪn.jən/"),W("agree","đồng ý","👍","/əˈɡriː/"),W("disagree","không đồng ý","👎","/ˌdɪs.əˈɡriː/"),W("promise","lời hứa","🤞","/ˈprɒm.ɪs/"),W("secret","bí mật","🤫","/ˈsiː.krət/"),W("question","câu hỏi","❓","/ˈkwes.tʃən/")]},
+ {name:"Unit 10 · Natural Disasters", emoji:"🌋", pro:true, words:[W("flood","lũ lụt","🌊","/flʌd/"),W("earthquake","động đất","💥","/ˈɜːθ.kweɪk/"),W("volcano","núi lửa","🌋","/vɒlˈkeɪ.nəʊ/"),W("typhoon","cơn bão lớn","🌀","/taɪˈfuːn/"),W("drought","hạn hán","🏜️","/draʊt/"),W("thunder","sấm sét","⛈️","/ˈθʌn.dər/")]},
+ {name:"Unit 11 · Dreams & Future", emoji:"🔮", pro:true, words:[W("dream","giấc mơ / ước mơ","💭","/driːm/"),W("future","tương lai","🔮","/ˈfjuː.tʃər/"),W("scientist","nhà khoa học","🧑‍🔬","/ˈsaɪən.tɪst/"),W("designer","nhà thiết kế","🧑‍🎨","/dɪˈzaɪ.nər/"),W("reporter","phóng viên","🎙️","/rɪˈpɔː.tər/"),W("coach","huấn luyện viên","📣","/kəʊtʃ/")]},
+ {name:"Unit 12 · World Geography", emoji:"🗺️", pro:true, words:[W("capital","thủ đô","🏛️","/ˈkæp.ɪ.təl/"),W("ocean","đại dương","🌊","/ˈəʊ.ʃən/"),W("continent","châu lục","🗺️","/ˈkɒn.tɪ.nənt/"),W("border","biên giới","🚧","/ˈbɔː.dər/"),W("valley","thung lũng","🏞️","/ˈvæl.i/"),W("cave","hang động","🕳️","/keɪv/")]},
+ {name:"Unit 13 · Money & Saving", emoji:"🪙", pro:true, words:[W("coin","đồng xu","🪙","/kɔɪn/"),W("expensive","đắt tiền","💎","/ɪkˈspen.sɪv/"),W("save","tiết kiệm","💰","/seɪv/"),W("spend","chi tiêu","🛍️","/spend/"),W("borrow","mượn","🤝","/ˈbɒr.əʊ/"),W("exchange","trao đổi","🔁","/ɪksˈtʃeɪndʒ/")]},
+ {name:"Unit 14 · Little Science", emoji:"🧪", pro:true, words:[W("experiment","thí nghiệm","🧪","/ɪkˈsper.ɪ.mənt/"),W("magnet","nam châm","🧲","/ˈmæɡ.nət/"),W("microscope","kính hiển vi","🔬","/ˈmaɪ.krə.skəʊp/"),W("battery","cục pin","🔋","/ˈbæt.ər.i/"),W("liquid","chất lỏng","💧","/ˈlɪk.wɪd/"),W("metal","kim loại","⚙️","/ˈmet.əl/")]},
+ {name:"Unit 15 · Stories & Books", emoji:"📖", pro:true, words:[W("story","câu chuyện","📖","/ˈstɔː.ri/"),W("author","tác giả","🖋️","/ˈɔː.θər/"),W("chapter","chương sách","🔖","/ˈtʃæp.tər/"),W("character","nhân vật","🎭","/ˈkær.ək.tər/"),W("legend","truyền thuyết","🐲","/ˈledʒ.ənd/"),W("poem","bài thơ","📜","/ˈpəʊ.ɪm/")]},
+ {name:"Unit 16 · Amazing Holidays", emoji:"🎡", pro:true, words:[W("journey","chuyến đi","🧳","/ˈdʒɜː.ni/"),W("adventure","cuộc phiêu lưu","🗻","/ədˈven.tʃər/"),W("carnival","hội chợ","🎡","/ˈkɑː.nɪ.vəl/"),W("parade","cuộc diễu hành","🥁","/pəˈreɪd/"),W("costume","trang phục hóa trang","🎃","/ˈkɒs.tjuːm/"),W("memory","kỷ niệm","📸","/ˈmem.ər.i/")]},
+ {name:"Unit 17 · Five Senses", emoji:"👅", pro:true, words:[W("taste","vị giác / nếm","👅","/teɪst/"),W("smell","khứu giác / ngửi","👃","/smel/"),W("touch","xúc giác / chạm","🤲","/tʌtʃ/"),W("sound","âm thanh","🔊","/saʊnd/"),W("sight","thị giác","👁️","/saɪt/"),W("sense","giác quan","🧠","/sens/")]},
+ {name:"Unit 18 · At the Restaurant", emoji:"🤵", pro:true, words:[W("menu","thực đơn","📋","/ˈmen.juː/"),W("waiter","người phục vụ","🤵","/ˈweɪ.tər/"),W("order","gọi món","🧾","/ˈɔː.dər/"),W("dessert","món tráng miệng","🍮","/dɪˈzɜːt/"),W("tip","tiền boa","🪙","/tɪp/"),W("delicious","ngon tuyệt","😋","/dɪˈlɪʃ.əs/")]},
+ {name:"Unit 19 · Describing People", emoji:"🌺", pro:true, words:[W("beautiful","xinh đẹp","🌺","/ˈbjuː.tɪ.fəl/"),W("handsome","đẹp trai","🤵","/ˈhæn.səm/"),W("young","trẻ","👶","/jʌŋ/"),W("old","già","👴","/əʊld/"),W("strong","khỏe mạnh","🦾","/strɒŋ/"),W("gentle","dịu dàng","🕊️","/ˈdʒen.təl/")]},
+ {name:"Unit 20 · Action Verbs", emoji:"🏗️", pro:true, words:[W("build","xây dựng","🏗️","/bɪld/"),W("repair","sửa chữa","🔧","/rɪˈpeər/"),W("invent","phát minh","💡","/ɪnˈvent/"),W("explore","khám phá","🔭","/ɪkˈsplɔːr/"),W("protect","bảo vệ","🛡️","/prəˈtekt/"),W("celebrate","ăn mừng","🎊","/ˈsel.ə.breɪt/")]},
+ {name:"Unit 21 · Everyday Phrases", emoji:"🍀", pro:true, words:[W("good luck","chúc may mắn","🍀","/ˌɡʊd ˈlʌk/"),W("thank you","cảm ơn","🙏","/ˈθæŋk juː/"),W("well done","làm tốt lắm","🏆","/ˌwel ˈdʌn/"),W("see you","hẹn gặp lại","👋","/ˈsiː juː/"),W("excuse me","xin lỗi (làm phiền)","🙇","/ɪkˈskjuːz miː/"),W("sorry","xin lỗi","😔","/ˈsɒr.i/")]},
+]},
+];
+
+/* Phiên âm IPA — tách riêng để dễ bổ sung khi thêm từ mới */
+const IPA = {
+  "cat":"/kæt/","dog":"/dɒɡ/","ball":"/bɔːl/","sun":"/sʌn/","egg":"/eɡ/","fish":"/fɪʃ/",
+  "red":"/red/","blue":"/bluː/","green":"/ɡriːn/","yellow":"/ˈjel.əʊ/","pink":"/pɪŋk/","black":"/blæk/",
+  "one":"/wʌn/","two":"/tuː/","three":"/θriː/","four":"/fɔːr/","five":"/faɪv/","ten":"/ten/",
+  "mother":"/ˈmʌð.ər/","father":"/ˈfɑː.ðər/","sister":"/ˈsɪs.tər/","brother":"/ˈbrʌð.ər/","baby":"/ˈbeɪ.bi/","grandma":"/ˈɡræn.mɑː/",
+  "sit down":"/ˌsɪt ˈdaʊn/","stand up":"/ˌstænd ˈʌp/","hello":"/heˈləʊ/","listen":"/ˈlɪs.ən/","school":"/skuːl/","teacher":"/ˈtiː.tʃər/",
+  "book":"/bʊk/","pen":"/pen/","pencil":"/ˈpen.səl/","ruler":"/ˈruː.lər/","bag":"/bæɡ/","eraser":"/ɪˈreɪ.zər/",
+  "get up":"/ˌɡet ˈʌp/","read":"/riːd/","swim":"/swɪm/","dance":"/dɑːns/","sing":"/sɪŋ/","cook":"/kʊk/",
+  "sunny":"/ˈsʌn.i/","rainy":"/ˈreɪ.ni/","windy":"/ˈwɪn.di/","cloudy":"/ˈklaʊ.di/","snowy":"/ˈsnəʊ.i/","hot":"/hɒt/",
+  "hospital":"/ˈhɒs.pɪ.təl/","market":"/ˈmɑː.kɪt/","museum":"/mjuːˈziː.əm/","cinema":"/ˈsɪn.ə.mə/","park":"/pɑːk/","zoo":"/zuː/",
+  "doctor":"/ˈdɒk.tər/","farmer":"/ˈfɑː.mər/","driver":"/ˈdraɪ.vər/","nurse":"/nɜːs/","pilot":"/ˈpaɪ.lət/","singer":"/ˈsɪŋ.ər/"
+};
+
+const ACTIVITIES = [
+  {key:"flash",   name:"New Words",        type:"Flashcards · listen & remember", icon:"📖"},
+  {key:"listen",  name:"Listen & Choose",  type:"Listening practice",             icon:"👂"},
+  {key:"match",   name:"Matching",         type:"Picture ↔ word",                 icon:"🧩"},
+  {key:"anagram", name:"Word Builder",     type:"Spelling practice",              icon:"🔤"},
+  {key:"quiz",    name:"Unit Test",        type:"Review quiz",                    icon:"🏅"},
+];
+
+/* ===== Trạng thái (lưu trong bộ nhớ phiên chơi) ===== */
+const progress = {}; // key "g-u" -> {actIndex: stars}
+let cur = {g:0, u:0, a:0};
+let session = null; // trạng thái ván chơi hiện tại
+
+const $ = id => document.getElementById(id);
+function go(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); }
+function shuffle(a){ const arr=[...a]; for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+function speak(text){
+  try{ speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; u.rate=0.85;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+/* Hình minh họa: trường img của mỗi từ nhận EMOJI hoặc ĐƯỜNG DẪN ẢNH
+   (vd "images/cat.png" hoặc "https://.../cat.jpg") — web tự nhận diện và hiển thị. */
+function imgHTML(w){
+  return /[.\/]/.test(w.img)
+    ? '<img class="wimg" src="'+w.img+'" alt="'+w.en+'">'
+    : w.img;
+}
+function flowerBurst(el){ // gà con tung hoa quanh ô
+  const icons=["🌸","🌼","🌺","💮"];
+  const r=el.getBoundingClientRect();
+  for(let i=0;i<9;i++){
+    const f=document.createElement("div");
+    f.className="flower";
+    f.textContent=icons[i%icons.length];
+    f.style.left=(r.left+r.width/2)+"px";
+    f.style.top=(r.top+6)+"px";
+    f.style.setProperty("--dx",(Math.random()*180-90)+"px");
+    f.style.setProperty("--dy",(-70-Math.random()*90)+"px");
+    document.body.appendChild(f);
+    setTimeout(()=>f.remove(),1150);
+  }
+}
+function confetti(){
+  const icons=["🎈","⭐","🎉","✨","💖","🌸","🐥"];
+  for(let i=0;i<14;i++){
+    const c=document.createElement("div"); c.className="confetti";
+    c.textContent=icons[Math.floor(Math.random()*icons.length)];
+    c.style.left=Math.random()*100+"vw";
+    c.style.animationDuration=(1.4+Math.random()*1.2)+"s";
+    document.body.appendChild(c); setTimeout(()=>c.remove(),3000);
+  }
+}
+
+/* ===== Âm thanh (tự tạo bằng Web Audio, không cần file) ===== */
+let AC=null;
+function audio(){
+  if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==="suspended") AC.resume();
+  return AC;
+}
+function tone(freq,t0,dur,type,vol){
+  const ctx=audio(), o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=type||"sine"; o.frequency.value=freq;
+  const t=ctx.currentTime+t0;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol||0.18,t+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(ctx.destination);
+  o.start(t); o.stop(t+dur+0.05);
+}
+function clap(t0){
+  const ctx=audio();
+  const buf=ctx.createBuffer(1, ctx.sampleRate*0.06, ctx.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+  const src=ctx.createBufferSource(); src.buffer=buf;
+  const f=ctx.createBiquadFilter(); f.type="bandpass"; f.frequency.value=1800;
+  const g=ctx.createGain(); g.gain.value=0.13;
+  src.connect(f); f.connect(g); g.connect(ctx.destination);
+  src.start(ctx.currentTime+t0);
+}
+function sndCorrect(){ // hoan hô: nốt vui đi lên + tràng vỗ tay
+  try{
+    [523,659,784,1047].forEach((f,i)=>tone(f, i*0.09, 0.22, "triangle", 0.2));
+    for(let i=0;i<7;i++) clap(0.28+i*0.07);
+  }catch(e){}
+}
+function sndWrong(){ // tèng tèng: 2 nốt trầm đi xuống
+  try{
+    tone(330,0,0.18,"square",0.11);
+    tone(247,0.2,0.3,"square",0.11);
+  }catch(e){}
+}
+function sndDing(){ // 2 nốt "đinh!" khi đúng 1 ô
+  try{ tone(880,0,0.12,"triangle",0.16); tone(1318,0.1,0.2,"triangle",0.16); }catch(e){}
+}
+function sndFinish(){ // hoan hô lớn: nhạc chiến thắng + vỗ tay + tiếng "Yay!"
+  try{
+    [523,659,784,1047,1319].forEach((f,i)=>tone(f, i*0.12, 0.3, "triangle", 0.2));
+    tone(1568, 0.62, 0.5, "triangle", 0.22);
+    for(let i=0;i<14;i++) clap(0.3+i*0.09);
+    const u=new SpeechSynthesisUtterance("Yay!");
+    u.lang="en-US"; u.pitch=2; u.rate=1.1; u.volume=0.9;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function celebrate(){ // tung hoa 3 đợt + hoan hô
+  confetti(); setTimeout(confetti,400); setTimeout(confetti,800);
+  sndFinish();
+}
+function addPoints(n){
+  session.score=(session.score||0)+n;
+  const sp=$("actScore");
+  sp.textContent=session.score;
+  sp.classList.remove("pop"); void sp.offsetWidth; sp.classList.add("pop");
+  const f=document.createElement("div");
+  f.className="floatPts"; f.textContent="+"+n;
+  const r=sp.getBoundingClientRect();
+  f.style.left=(r.left+r.width/2)+"px"; f.style.top=(r.top+r.height-4)+"px";
+  document.body.appendChild(f); setTimeout(()=>f.remove(),950);
+}
+function starsOf(ratio){ return ratio>=0.999?3 : ratio>=0.7?2 : 1; }
+function starStr(n){ return "⭐".repeat(n) + "☆".repeat(3-n); }
+function unitKey(){ return cur.g+"-"+cur.u; }
+
+/* ===== Trang chủ ===== */
+function renderHome(){
+  const grid=$("gradeGrid"); grid.innerHTML="";
+  CURRICULUM.forEach((g,gi)=>{
+    const total=g.units.length*ACTIVITIES.length;
+    let earned=0;
+    g.units.forEach((_,ui)=>{ const p=progress[gi+"-"+ui]||{}; earned+=Object.keys(p).length; });
+    const b=document.createElement("button");
+    b.className="gradeCard";
+    b.innerHTML=`<div class="gradeIcon">${g.icon}</div>
+      <div><div class="gradeName">${g.grade}</div>
+      <div class="gradeSub">${g.units.length} units · ${earned}/${total} activities</div></div>`;
+    b.onclick=()=>{ cur.g=gi; renderUnits(); go("unitScreen"); };
+    grid.appendChild(b);
+  });
+}
+
+/* ===== Danh sách Unit ===== */
+function renderUnits(){
+  const g=CURRICULUM[cur.g];
+  $("unitScreenTitle").textContent=g.icon+" "+g.grade;
+  const list=$("unitList"); list.innerHTML="";
+  g.units.forEach((u,ui)=>{
+    const p=progress[cur.g+"-"+ui]||{};
+    const stars=Object.values(p).reduce((s,v)=>s+v,0);
+    const b=document.createElement("button");
+    b.className="unitCard";
+    b.innerHTML=`<div class="unitEmoji">${u.emoji}</div>
+      <div class="unitInfo">
+        <div class="unitName">${u.name} <span class="badge ${u.pro?'pro':'free'}">${u.pro?'PRO':'FREE'}</span></div>
+        <div class="unitWords">${u.words.map(w=>w.en).join(" · ")}</div>
+      </div>
+      <div class="unitStars">${stars}⭐</div>`;
+    b.onclick=()=>{
+      if(u.pro && !isPro()){ showPay(); return; }
+      cur.u=ui; renderMap(); go("mapScreen");
+    };
+    list.appendChild(b);
+  });
+}
+
+/* ===== Bản đồ hoạt động ===== */
+function renderMap(){
+  const u=CURRICULUM[cur.g].units[cur.u];
+  $("mapScreenTitle").textContent=u.emoji+" "+u.name.replace(/^Unit \d+ · /,"");
+  const list=$("mapList"); list.innerHTML="";
+  const p=progress[unitKey()]||{};
+  ACTIVITIES.forEach((a,ai)=>{
+    const b=document.createElement("button");
+    b.className="mapItem"+(p[ai]?" done":"");
+    b.innerHTML=`<div class="mapNum">${p[ai]?"✓":a.icon}</div>
+      <div><div class="mapName">${a.name}</div><div class="mapType">${a.type}</div></div>
+      <div style="flex:1"></div>
+      <div class="mapStars">${p[ai]?starStr(p[ai]):""}</div>`;
+    b.onclick=()=>{ cur.a=ai; startActivity(); };
+    list.appendChild(b);
+  });
+}
+
+/* ===== Điều phối hoạt động ===== */
+function startActivity(){
+  const words=shuffle(CURRICULUM[cur.g].units[cur.u].words);
+  session={ words, round:0, correct:0, attempts:0, score:0 };
+  go("activityScreen");
+  $("actScore").textContent="0";
+  const starters={flash:startFlash, listen:startListen, match:startMatch, anagram:startAnagram, quiz:startQuiz};
+  starters[ACTIVITIES[cur.a].key]();
+}
+function quitActivity(){
+  speechSynthesis.cancel();
+  if(session && session.isTyping){ renderTyping(); go("typingScreen"); return; }
+  renderMap(); go("mapScreen");
+}
+function replayActivity(){
+  if(session && session.isTyping){ startTyping(session.mi); return; }
+  startActivity();
+}
+function nextFromResult(){
+  if(session && session.isTyping){ renderTyping(); go("typingScreen"); return; }
+  if(cur.a < ACTIVITIES.length-1){ cur.a++; startActivity(); }
+  else { renderMap(); go("mapScreen"); }
+}
+function setProgress(round,total){
+  $("actProgress").style.width=(round/total*100)+"%";
+  $("actCounter").textContent=Math.min(round+1,total)+"/"+total;
+}
+function finishActivity(correct,total){
+  speechSynthesis.cancel();
+  const ratio= total? correct/total : 1;
+  const stars=starsOf(ratio);
+  const p=progress[unitKey()]||(progress[unitKey()]={});
+  p[cur.a]=Math.max(p[cur.a]||0, stars);
+  syncStars("u:"+unitKey()+":"+cur.a, stars);
+  $("resStars").textContent=starStr(stars);
+  $("resTitle").textContent= stars===3 ? "🐥 PiPi is so proud of you!" : stars===2 ? "🐥 Great job!" : "🐥 Let's practice again with PiPi!";
+  $("resStats").textContent= total? `${correct}/${total} correct · ${session.score||0} points ⭐` : "New words completed!";
+  $("resNextBtn").textContent= cur.a<ACTIVITIES.length-1 ? "Next activity ▶" : "Back to unit map ▶";
+  go("resultScreen");
+  celebrate();
+}
+
+/* ===== 1. Flashcard học từ mới ===== */
+function startFlash(){ session.round=0; renderFlash(); }
+function renderFlash(){
+  const w=session.words[session.round];
+  setProgress(session.round, session.words.length);
+  $("actCard").innerHTML=`
+    <div class="flashcard pop">
+      <div class="flashEmoji">${imgHTML(w)}</div>
+      <div class="enWord">${w.en}</div>
+      <div class="ipa">${w.ipa||IPA[w.en]||""}</div>
+      <button class="speak" onclick="speak('${w.en}')">🔊</button>
+    </div>
+    <div style="display:flex; gap:12px;">
+      ${session.round>0?'<button class="btn ghost" onclick="flashPrev()">◀ Back</button>':''}
+      <button class="btn" onclick="flashNext()">${session.round<session.words.length-1?"Continue ▶":"Finish ✓"}</button>
+    </div>`;
+  setTimeout(()=>speak(w.en),300);
+}
+function flashPrev(){ session.round--; renderFlash(); }
+function flashNext(){
+  if(session.round<session.words.length-1){ session.round++; renderFlash(); }
+  else finishActivity(0,0);
+}
+
+/* ===== 2. Nghe chọn tranh ===== */
+function startListen(){ session.round=0; session.correct=0; renderListen(); }
+function renderListen(){
+  const w=session.words[session.round];
+  setProgress(session.round, session.words.length);
+  const opts=shuffle([w, ...shuffle(session.words.filter(x=>x!==w)).slice(0,3)]);
+  $("actCard").innerHTML=`
+    <div class="hint">Listen and choose the picture</div>
+    <button class="speak big" onclick="speak('${w.en}')">🔊</button>
+    <div class="optGrid">${opts.map(o=>`<button class="optCard" data-en="${o.en}">${imgHTML(o)}</button>`).join("")}</div>
+    <div class="feedback" id="fb"></div>`;
+  document.querySelectorAll(".optCard").forEach(b=>{
+    b.onclick=()=>pickListen(b, b.dataset.en===w.en, w);
+  });
+  setTimeout(()=>speak(w.en),350);
+}
+function pickListen(btn, ok, w){
+  document.querySelectorAll(".optCard").forEach(b=>b.onclick=null);
+  const fb=$("fb");
+  if(ok){ btn.classList.add("right"); session.correct++;
+    sndCorrect(); addPoints(10);
+    fb.textContent="🎉 Correct! "+w.en; fb.className="feedback good";
+  } else { btn.classList.add("wrongPick"); sndWrong();
+    document.querySelectorAll(".optCard").forEach(b=>{ if(b.dataset.en===w.en) b.classList.add("right"); });
+    fb.textContent="The answer is: "+w.en; fb.className="feedback bad";
+  }
+  setTimeout(()=>{
+    session.round++;
+    if(session.round<session.words.length) renderListen();
+    else finishActivity(session.correct, session.words.length);
+  }, 1300);
+}
+
+/* ===== 3. Matching — hàng tranh + hàng từ, có ví dụ trước ===== */
+function startMatch(){
+  session.matched=0; session.attempts=0; session.selImg=null; session.selWord=null;
+  setProgress(0,1);
+  $("actCounter").textContent="Match "+session.words.length+" pairs";
+  $("actCard").innerHTML=`
+    <div class="hint" style="font-size:18px; font-weight:800; opacity:.8;">Example</div>
+    <div class="demoRow">
+      <div class="pairCard demo"><span class="pe">🐤</span></div>
+      <div class="demoArrow">➜</div>
+      <div class="pairCard demo">chick</div>
+      <div class="tickDemo">✓</div>
+    </div>
+    <div class="hint">Tap a picture, then tap its word!</div>
+    <button class="btn" onclick="matchBegin()">Start ▶</button>`;
+}
+function matchBegin(){
+  const imgs=shuffle(session.words.map((w,i)=>({id:i,w})));
+  const words=shuffle(session.words.map((w,i)=>({id:i,w})));
+  $("actCard").innerHTML=`
+    <div class="pairCols">
+      <div class="pairRow" id="rowImg"></div>
+      <div class="pairRow" id="rowWord"></div>
+    </div>
+    <div class="feedback" id="fb"></div>`;
+  imgs.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="pairCard imgCard";
+    b.innerHTML='<span class="pe">'+imgHTML(c.w)+'</span>';
+    b.onclick=()=>pickSide("img",b,c.id);
+    $("rowImg").appendChild(b);
+  });
+  words.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="pairCard wordCard"; b.textContent=c.w.en;
+    b.onclick=()=>pickSide("word",b,c.id);
+    $("rowWord").appendChild(b);
+  });
+}
+function pickSide(side,btn,id){
+  if(btn.classList.contains("matched")) return;
+  const key= side==="img" ? "selImg" : "selWord";
+  if(session[key] && session[key].btn===btn){ btn.classList.remove("sel"); session[key]=null; return; }
+  if(session[key]) session[key].btn.classList.remove("sel");
+  session[key]={btn,id}; btn.classList.add("sel");
+  if(session.selImg && session.selWord){
+    session.attempts++;
+    const a=session.selImg, b=session.selWord;
+    session.selImg=null; session.selWord=null;
+    if(a.id===b.id){
+      [a.btn,b.btn].forEach(x=>{x.classList.remove("sel"); x.classList.add("matched");});
+      session.matched++;
+      sndCorrect(); addPoints(10);
+      speak(session.words[a.id].en);
+      $("actProgress").style.width=(session.matched/session.words.length*100)+"%";
+      if(session.matched===session.words.length){
+        setTimeout(()=>finishActivity(
+          session.attempts===session.words.length ? session.words.length :
+          (session.attempts<=session.words.length*1.5 ? Math.ceil(session.words.length*0.75) : Math.ceil(session.words.length*0.5)),
+          session.words.length), 500);
+      }
+    } else {
+      sndWrong();
+      [a.btn,b.btn].forEach(x=>x.classList.add("shake"));
+      setTimeout(()=>[a.btn,b.btn].forEach(x=>{x.classList.remove("sel","shake");}),450);
+    }
+  }
+}
+
+/* ===== 4. Xếp chữ — khối chữ màu + phiên âm (kiểu ảnh mẫu) ===== */
+function chunkWord(word){
+  // cắt từ thành các khối 1–3 chữ cái ngẫu nhiên
+  const chunks=[]; let i=0;
+  while(i<word.length){
+    const remain=word.length-i;
+    let size=1+Math.floor(Math.random()*3);
+    if(size>remain) size=remain;
+    chunks.push(word.slice(i,i+size)); i+=size;
+  }
+  if(chunks.length===1 && word.length>1){
+    const mid=Math.ceil(word.length/2);
+    return [word.slice(0,mid), word.slice(mid)];
+  }
+  return chunks;
+}
+function startAnagram(){ session.round=0; session.correct=0; renderAnagram(); }
+function renderAnagram(){
+  const w=session.words[session.round];
+  const parts=w.en.split(" ");
+  session.parts=parts;
+  session.placed=parts.map(()=>[]);
+  session.wordDone=parts.map(()=>false);
+  session.firstTry=true; session.locked=false;
+  setProgress(session.round, session.words.length);
+  const ipaTxt=w.ipa||IPA[w.en]||"";
+  $("actCard").innerHTML=`
+    <button class="speak" onclick="speak('${w.en}')">🔊</button>
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center;">
+      <div class="emoji">${imgHTML(w)}</div>
+      <div style="text-align:center;">
+        <div class="enWord">${w.en}</div>
+        <div class="ipa">${ipaTxt}</div>
+      </div>
+    </div>
+    <div class="wordLine" id="lineArea"></div>
+    <div class="poolArea" id="poolArea"></div>
+    <div class="feedback" id="fb"></div>`;
+  parts.forEach((word,wi)=>{
+    const box=document.createElement("div");
+    box.className="wordBox"; box.id="box"+wi;
+    box.innerHTML=`<div class="tick">✓</div><div class="chick"></div><div class="lineRow" id="line${wi}"></div>`;
+    $("lineArea").appendChild(box);
+    const tg=document.createElement("div"); tg.className="wordGroup";
+    let chunks=shuffle(chunkWord(word));
+    if(chunks.join("")===word && chunks.length>1) chunks=shuffle(chunks);
+    chunks.forEach((ch,ci)=>{
+      const color="c"+((wi*3+ci)%5);
+      const t=document.createElement("button");
+      t.className="chunk "+color; t.textContent=ch;
+      t.onclick=()=>anaPlace(wi,ch,color,t);
+      tg.appendChild(t);
+    });
+    $("poolArea").appendChild(tg);
+  });
+  setTimeout(()=>speak(w.en),350);
+}
+function anaPlace(wi,ch,color,tileEl){
+  if(session.locked || session.wordDone[wi] || tileEl.classList.contains("used")) return;
+  tileEl.classList.add("used");
+  session.placed[wi].push({chunk:ch,color,tileEl});
+  anaRender(wi);
+  const word=session.parts[wi];
+  const joined=session.placed[wi].map(x=>x.chunk).join("");
+  if(joined.length>=word.length){
+    if(joined===word) wordCorrect(wi);
+    else wordWrong(wi);
+  }
+}
+function wordCorrect(wi){
+  session.wordDone[wi]=true;
+  const box=$("box"+wi);
+  box.classList.add("correct","pop");
+  const chick=box.querySelector(".chick");
+  chick.innerHTML="🐥";
+  chick.className="chick show happy";
+  flowerBurst(box);
+  sndDing(); addPoints(5);
+  if(session.wordDone.every(Boolean)){
+    session.locked=true;
+    if(session.firstTry) session.correct++;
+    const w=session.words[session.round];
+    const fb=$("fb");
+    fb.textContent="🎉 Correct! "+w.en.toUpperCase(); fb.className="feedback good";
+    sndCorrect(); speak(w.en);
+    setTimeout(()=>{
+      session.round++;
+      if(session.round<session.words.length) renderAnagram();
+      else finishActivity(session.correct, session.words.length);
+    },1500);
+  }
+}
+function wordWrong(wi){
+  session.firstTry=false;
+  sndWrong();
+  const box=$("box"+wi);
+  box.classList.add("shake");
+  const chick=box.querySelector(".chick");
+  chick.innerHTML='🐥<span class="tear">💧</span>';
+  chick.className="chick show sad";
+  setTimeout(()=>{ chick.className="chick"; chick.innerHTML=""; }, 1600);
+  const fb=$("fb");
+  fb.textContent="Not quite — try again!"; fb.className="feedback bad";
+  setTimeout(()=>{
+    box.classList.remove("shake");
+    session.placed[wi].forEach(x=>x.tileEl.classList.remove("used"));
+    session.placed[wi]=[];
+    anaRender(wi);
+  },550);
+}
+function anaRemoveChunk(wi,idx){
+  if(session.locked || session.wordDone[wi]) return;
+  const item=session.placed[wi].splice(idx,1)[0];
+  item.tileEl.classList.remove("used");
+  anaRender(wi);
+}
+function anaRender(wi){
+  const line=$("line"+wi); line.innerHTML="";
+  session.placed[wi].forEach((item,idx)=>{
+    const b=document.createElement("button");
+    b.className="chunk "+item.color; b.textContent=item.chunk;
+    b.title="Tap to remove";
+    b.onclick=()=>anaRemoveChunk(wi,idx);
+    line.appendChild(b);
+  });
+}
+
+/* ===== 5. Unit Test — đọc từ, chọn đúng HÌNH ===== */
+function startQuiz(){ session.round=0; session.correct=0; renderQuiz(); }
+function renderQuiz(){
+  const w=session.words[session.round];
+  setProgress(session.round, session.words.length);
+  const others=shuffle(session.words.filter(x=>x!==w)).slice(0,3);
+  const opts=shuffle([w,...others]);
+  $("actCard").innerHTML=`
+    <button class="speak" onclick="speak('${w.en}')">🔊</button>
+    <div class="enWord">${w.en}</div>
+    <div class="ipa">${w.ipa||IPA[w.en]||""}</div>
+    <div class="optGrid">${opts.map(o=>`<button class="optCard" data-en="${o.en}">${imgHTML(o)}</button>`).join("")}</div>
+    <div class="feedback" id="fb"></div>`;
+  setTimeout(()=>speak(w.en),300);
+  document.querySelectorAll(".optCard").forEach(b=>{
+    b.onclick=()=>pickQuiz(b, b.dataset.en===w.en, w);
+  });
+}
+function pickQuiz(btn, ok, w){
+  document.querySelectorAll(".optCard").forEach(b=>b.onclick=null);
+  const fb=$("fb");
+  if(ok){ btn.classList.add("right"); session.correct++;
+    sndCorrect(); addPoints(10);
+    fb.textContent="🎉 Correct!"; fb.className="feedback good";
+  } else { btn.classList.add("wrongPick"); sndWrong();
+    document.querySelectorAll(".optCard").forEach(b=>{ if(b.dataset.en===w.en) b.classList.add("right"); });
+    fb.textContent="Oops! The answer is: "+w.en; fb.className="feedback bad";
+  }
+  setTimeout(()=>{
+    session.round++;
+    if(session.round<session.words.length) renderQuiz();
+    else finishActivity(session.correct, session.words.length);
+  },1300);
+}
+
+/* ===== ⌨️ Typing Practice — 7 modules × 2 chế độ (có / không gợi ý phím) ===== */
+const ALLWORDS = CURRICULUM.flatMap(g=>g.units.flatMap(u=>u.words));
+const TYPING_MODULES = (()=>{ 
+  const sizes=[30,100,100,100,100,100,100]; let off=0;
+  return sizes.map((n,i)=>{
+    const m={ i, name:"Module "+(i+1)+(i===0?" · Starter":""), from:off+1, to:off+n,
+              words:ALLWORDS.slice(off,off+n), free:i===0 };
+    off+=n; return m;
+  });
+})();
+let typingMode="key";
+const typingProgress={};
+
+function setTypingMode(m){
+  typingMode=m;
+  $("modeKey").classList.toggle("active",m==="key");
+  $("modeNokey").classList.toggle("active",m==="nokey");
+  renderTyping();
+}
+function renderTyping(){
+  const list=$("typingList"); list.innerHTML="";
+  TYPING_MODULES.forEach(mod=>{
+    const st=typingProgress[typingMode+"-"+mod.i]||0;
+    const b=document.createElement("button");
+    b.className="unitCard";
+    b.innerHTML='<div class="unitEmoji">'+(typingMode==="key"?"⌨️":"🧠")+'</div>'+
+      '<div class="unitInfo"><div class="unitName">'+mod.name+' <span class="badge '+(mod.free?"free":"pro")+'">'+(mod.free?"FREE":"PRO")+'</span></div>'+
+      '<div class="unitWords">'+mod.words.length+' words · #'+mod.from+'–'+mod.to+'</div></div>'+
+      '<div class="unitStars">'+(st? "⭐".repeat(st) : "")+'</div>';
+    b.onclick=()=>{
+      if(!mod.free && !isPro()){ showPay(); return; }
+      startTyping(mod.i);
+    };
+    list.appendChild(b);
+  });
+}
+function startTyping(mi){
+  const mod=TYPING_MODULES[mi];
+  session={ isTyping:true, mode:typingMode, mi,
+    words:shuffle(mod.words), idx:0, typed:"", target:"",
+    perfect:0, wordHadError:false, lockT:false, score:0 };
+  go("activityScreen");
+  $("actScore").textContent="0";
+  renderTypingWord();
+}
+const KB_ROWS=[["q","w","e","r","t","y","u","i","o","p"],["a","s","d","f","g","h","j","k","l"],["z","x","c","v","b","n","m"]];
+function renderTypingWord(){
+  const w=session.words[session.idx];
+  session.target=w.en.toLowerCase();
+  session.typed=""; session.wordHadError=false;
+  setProgress(session.idx, session.words.length);
+  const showWord = session.mode==="key";
+  $("actCard").innerHTML=
+    '<button class="speak" onclick="speak(\''+w.en+'\')">🔊</button>'+
+    '<div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center;">'+
+      '<div class="emoji">'+imgHTML(w)+'</div>'+
+      '<div style="text-align:center;">'+
+        (showWord? '<div class="enWord">'+w.en+'</div>' : '')+
+        '<div class="ipa">'+(w.ipa||"")+'</div>'+
+        '<div class="hint">'+(session.mode==="key"?"Press the green key!":"Listen and type the word, then press Check ✓")+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="typedWrap"><div class="chick big" id="tChick"></div><div class="typedLine" id="typedLine"></div></div>'+
+    '<div class="kb" id="kb"></div>'+
+    '<div class="feedback" id="fb"></div>'+
+    (session.mode==="nokey"? '<button class="btn" onclick="tSubmit()">Check ✓</button>':'');
+  buildKeyboard();
+  autoSpaces(); renderTyped();
+  setTimeout(()=>speak(w.en),350);
+}
+function buildKeyboard(){
+  const kb=$("kb"); kb.innerHTML="";
+  KB_ROWS.forEach(r=>{
+    const row=document.createElement("div"); row.className="kbRow";
+    r.forEach(k=>{
+      const b=document.createElement("button");
+      b.className="key"; b.dataset.k=k; b.textContent=k;
+      b.onclick=()=>pressKey(k);
+      row.appendChild(b);
+    });
+    kb.appendChild(row);
+  });
+  if(session.mode==="nokey"){
+    const row=document.createElement("div"); row.className="kbRow";
+    const bs=document.createElement("button");
+    bs.className="key wide"; bs.textContent="⌫";
+    bs.onclick=()=>tBackspace();
+    row.appendChild(bs);
+    kb.appendChild(row);
+  }
+}
+function autoSpaces(){ while(session.target[session.typed.length]===" ") session.typed+=" "; }
+function renderTyped(){
+  const line=$("typedLine"); line.innerHTML="";
+  for(let i=0;i<session.target.length;i++){
+    if(session.target[i]===" "){ const g=document.createElement("div"); g.className="tGap"; line.appendChild(g); continue; }
+    const s=document.createElement("div");
+    s.className="tSlot"+(i<session.typed.length?" filled":"")+(i===session.typed.length?" caret":"");
+    s.textContent=i<session.typed.length? session.typed[i] : "";
+    line.appendChild(s);
+  }
+  if(session.mode==="key"){
+    document.querySelectorAll("#kb .key").forEach(b=>b.classList.remove("hintKey"));
+    const next=session.target[session.typed.length];
+    if(next){ const kb=document.querySelector('#kb .key[data-k="'+next+'"]'); if(kb) kb.classList.add("hintKey"); }
+  }
+}
+function pressKey(k){
+  if(!session || !session.isTyping || session.lockT) return;
+  if(session.typed.length>=session.target.length) return;
+  if(session.mode==="key"){
+    const expected=session.target[session.typed.length];
+    if(k===expected){
+      session.typed+=k; autoSpaces();
+      tone(660,0,0.07,"triangle",0.1);
+      renderTyped();
+      if(session.typed===session.target) typingWordDone();
+    } else {
+      session.wordHadError=true;
+      sndWrong();
+      const kb=document.querySelector('#kb .key[data-k="'+k+'"]');
+      if(kb){ kb.classList.add("badKey"); setTimeout(()=>kb.classList.remove("badKey"),350); }
+    }
+  } else {
+    session.typed+=k; autoSpaces();
+    tone(660,0,0.05,"triangle",0.08);
+    renderTyped();
+  }
+}
+function tBackspace(){
+  if(!session || !session.isTyping || session.lockT) return;
+  let t=session.typed;
+  while(t.endsWith(" ")) t=t.slice(0,-1);
+  session.typed=t.slice(0,-1);
+  renderTyped();
+}
+function tSubmit(){
+  if(!session || !session.isTyping || session.mode!=="nokey" || session.lockT) return;
+  if(session.typed.length<session.target.length) return;
+  if(session.typed===session.target) typingWordDone();
+  else {
+    session.wordHadError=true;
+    sndWrong();
+    const chick=$("tChick");
+    chick.innerHTML='🐥<span class="tear">💧</span>';
+    chick.className="chick big show sad";
+    $("fb").textContent="Not quite — try again!"; $("fb").className="feedback bad";
+    $("actCard").classList.add("shake");
+    setTimeout(()=>{
+      $("actCard").classList.remove("shake");
+      chick.className="chick big"; chick.innerHTML="";
+      session.typed=""; autoSpaces(); renderTyped();
+      $("fb").textContent="";
+    },800);
+  }
+}
+function typingWordDone(){
+  session.lockT=true;
+  if(!session.wordHadError){ session.perfect++; addPoints(10); } else addPoints(5);
+  const chick=$("tChick");
+  chick.innerHTML="🐥"; chick.className="chick big show happy";
+  flowerBurst($("typedLine"));
+  sndDing();
+  const w=session.words[session.idx];
+  $("fb").textContent="🎉 "+w.en; $("fb").className="feedback good";
+  speak(w.en);
+  setTimeout(()=>{
+    session.lockT=false;
+    session.idx++;
+    if(session.idx<session.words.length) renderTypingWord();
+    else finishTyping();
+  },1100);
+}
+function finishTyping(){
+  speechSynthesis.cancel();
+  const total=session.words.length;
+  const stars=starsOf(session.perfect/total);
+  const key=session.mode+"-"+session.mi;
+  typingProgress[key]=Math.max(typingProgress[key]||0, stars);
+  syncStars("t:"+key, stars);
+  $("resStars").textContent=starStr(stars);
+  $("resTitle").textContent= stars===3 ? "🐥 PiPi is so proud of you!" : stars===2 ? "🐥 Great typing!" : "🐥 Keep practicing with PiPi!";
+  $("resStats").textContent=session.perfect+"/"+total+" perfect words · "+(session.score||0)+" points ⭐";
+  $("resNextBtn").textContent="Back to modules ▶";
+  go("resultScreen");
+  celebrate();
+}
+document.addEventListener("keydown",e=>{
+  if(!session || !session.isTyping) return;
+  if(!$("activityScreen").classList.contains("active")) return;
+  if(/^[a-zA-Z]$/.test(e.key)){ pressKey(e.key.toLowerCase()); }
+  else if(e.key==="Backspace"){ e.preventDefault(); tBackspace(); }
+  else if(e.key==="Enter"){ tSubmit(); }
+});
+
+/* iOS/Android chặn âm thanh tới khi người dùng chạm — mở khóa ở lần chạm đầu */
+let audioUnlocked=false;
+document.addEventListener("pointerdown",()=>{
+  if(audioUnlocked) return;
+  audioUnlocked=true;
+  try{
+    audio();
+    const u=new SpeechSynthesisUtterance(" ");
+    u.volume=0; speechSynthesis.speak(u);
+  }catch(e){}
+},{passive:true});
+
+/* ===== 👤 Tài khoản & PRO (chỉ hoạt động khi chạy qua server; mở file trực tiếp = chế độ khách, mở hết) ===== */
+let user=null, serverMode=false, appConfig={};
+function isPro(){ return !serverMode || (user && user.pro); }
+async function api(url,body){
+  const r=await fetch(url,{
+    method: body!==undefined ? "POST":"GET",
+    headers:{"Content-Type":"application/json"},
+    credentials:"same-origin",
+    body: body!==undefined ? JSON.stringify(body):undefined
+  });
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error||"Something went wrong");
+  return d;
+}
+async function initAuth(){
+  try{ appConfig=await api("/api/config"); serverMode=true; }
+  catch(e){ serverMode=false; renderUser(); return; }
+  try{ user=await api("/api/me"); }catch(e){ user=null; }
+  renderUser();
+  if(user) loadCloudProgress();
+  if(appConfig.googleClientId) initGoogle();
+  if(new URLSearchParams(location.search).get("paid")==="1"){
+    history.replaceState({},"","/");
+    try{
+      user=await api("/api/me"); renderUser();
+      if(user && user.pro) celebrate();
+    }catch(e){}
+  }
+}
+function renderUser(){
+  const row=$("userRow"); if(!row) return;
+  if(!serverMode){ row.innerHTML=""; return; }
+  if(user){
+    row.innerHTML=
+      '<div class="userChip">'+(user.pro?'<span class="proTag">PRO</span> ':'')+
+      '🐥 '+((user.name||user.email.split("@")[0]).replace(/</g,"&lt;"))+'</div>'+
+      (user.pro?'':'<button class="miniBtn gold" onclick="showPay()">👑 Upgrade</button>')+
+      '<button class="miniBtn" onclick="doLogout()">Sign out</button>';
+  } else {
+    row.innerHTML='<button class="miniBtn" onclick="showAuth()">👤 Sign in / Register</button>';
+  }
+}
+let authTab="login";
+function showAuth(){ $("authModal").style.display="flex"; setAuthTab("login"); }
+function showPay(){
+  if(serverMode && !user){ showAuth(); return; }
+  $("payPrice").textContent=(appConfig.price||299000).toLocaleString("vi-VN")+"₫";
+  $("payHint").textContent = appConfig.demoPay ? "Demo mode — no real charge" : "Secure payment via PayOS";
+  $("payModal").style.display="flex";
+}
+function hideModal(id){ $(id).style.display="none"; }
+function setAuthTab(t){
+  authTab=t;
+  $("tabLogin").classList.toggle("active",t==="login");
+  $("tabReg").classList.toggle("active",t==="reg");
+  $("aName").style.display = t==="reg" ? "block":"none";
+  $("authGo").textContent = t==="login" ? "Sign in":"Create account";
+  $("authErr").textContent="";
+}
+async function submitAuth(){
+  const email=$("aEmail").value.trim(), password=$("aPass").value, name=$("aName").value.trim();
+  $("authErr").textContent="";
+  try{
+    user=await api(authTab==="login"?"/api/login":"/api/register",{email,password,name});
+    hideModal("authModal"); renderUser(); loadCloudProgress();
+  }catch(e){ $("authErr").textContent=e.message; }
+}
+async function doLogout(){
+  try{ await api("/api/logout",{}); }catch(e){}
+  user=null; renderUser();
+}
+function initGoogle(){
+  const s=document.createElement("script");
+  s.src="https://accounts.google.com/gsi/client"; s.async=true;
+  s.onload=()=>{
+    google.accounts.id.initialize({
+      client_id:appConfig.googleClientId,
+      callback:async res=>{
+        try{
+          user=await api("/api/google",{credential:res.credential});
+          hideModal("authModal"); renderUser(); loadCloudProgress();
+        }catch(e){ $("authErr").textContent=e.message; }
+      }
+    });
+    google.accounts.id.renderButton($("gBtn"),{theme:"outline",size:"large",shape:"pill",width:250});
+  };
+  document.head.appendChild(s);
+}
+async function startPay(){
+  try{
+    const d=await api("/api/pay/create",{});
+    if(d.demo || d.already){
+      user=await api("/api/me");
+      hideModal("payModal"); renderUser(); celebrate();
+    } else if(d.checkoutUrl){ location.href=d.checkoutUrl; }
+  }catch(e){ $("payHint").textContent=e.message; }
+}
+async function syncStars(k,stars){
+  if(!serverMode||!user||!stars) return;
+  try{ await api("/api/progress",{k,stars}); }catch(e){}
+}
+async function loadCloudProgress(){
+  try{
+    const d=await api("/api/progress");
+    d.items.forEach(it=>{
+      if(it.k.startsWith("u:")){
+        const parts=it.k.split(":");
+        const p=progress[parts[1]]||(progress[parts[1]]={});
+        p[parts[2]]=Math.max(p[parts[2]]||0, it.stars);
+      } else if(it.k.startsWith("t:")){
+        const key=it.k.slice(2);
+        typingProgress[key]=Math.max(typingProgress[key]||0, it.stars);
+      }
+    });
+    renderHome();
+  }catch(e){}
+}
+initAuth();
+
+renderHome();
+/* Cập nhật lại số liệu khi quay về màn hình */
+const _go=go;
+go=function(id){ if(id==="homeScreen") renderHome(); if(id==="unitScreen") renderUnits(); _go(id); };
+</script>
+</body>
+</html>
