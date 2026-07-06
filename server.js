@@ -64,10 +64,26 @@ if (db.prepare("SELECT COUNT(*) c FROM grades").get().c === 0) {
   tx();
   console.log("🌱 Đã nạp nội dung mẫu: 5 lớp / 105 unit / 630 từ");
 }
+try{ db.exec("ALTER TABLE users ADD COLUMN plan TEXT DEFAULT 'free'"); }catch(e){}
+try{ db.exec("ALTER TABLE payments ADD COLUMN plan TEXT DEFAULT 'premium'"); }catch(e){}
+db.prepare("UPDATE users SET plan='premium' WHERE pro=1 AND (plan IS NULL OR plan='free')").run();
+
 const getSetting = k => { const r=db.prepare("SELECT value FROM settings WHERE key=?").get(k); return r?r.value:null; };
 const setSetting = (k,v) => db.prepare("INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(k,String(v));
-if(!getSetting("pro_price")) setSetting("pro_price", process.env.PRO_PRICE || "299000");
-const proPrice = () => parseInt(getSetting("pro_price"),10) || 299000;
+/* Giá bán & giá niêm yết từng gói (admin sửa được) */
+const PRICE_DEFAULTS = {
+  price_basic:"149000",  list_basic:"499000",
+  price_premium:"299000",list_premium:"799000",
+  price_family:"499000", list_family:"1999000",
+};
+for(const k in PRICE_DEFAULTS) if(!getSetting(k)) setSetting(k, PRICE_DEFAULTS[k]);
+const PLANS = ["basic","premium","family"];
+const planPrice = p => parseInt(getSetting("price_"+p),10) || 0;
+const prices = () => ({
+  basic:  { list:+getSetting("list_basic"),   sale:+getSetting("price_basic") },
+  premium:{ list:+getSetting("list_premium"), sale:+getSetting("price_premium") },
+  family: { list:+getSetting("list_family"),  sale:+getSetting("price_family") },
+});
 
 /* ---------- App ---------- */
 const app = express();
@@ -76,7 +92,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.get("/admin", (req,res)=>res.sendFile(path.join(__dirname,"public","admin.html")));
 
-const safeUser = u => ({ email:u.email, name:u.name||"", pro:!!u.pro, admin:ADMIN_EMAILS.includes(u.email) });
+const safeUser = u => {
+  const plan = u.plan && u.plan!=="free" ? u.plan : (u.pro ? "premium" : "free");
+  return { email:u.email, name:u.name||"", plan, pro:plan!=="free", admin:ADMIN_EMAILS.includes(u.email) };
+};
 function setToken(res,u){
   res.cookie("pipi_token", jwt.sign({uid:u.id}, JWT_SECRET, {expiresIn:"30d"}),
     {httpOnly:true, sameSite:"lax", secure:IS_PROD, maxAge:30*24*3600*1000});
@@ -96,7 +115,7 @@ function adminOnly(req,res,next){
 }
 
 /* ---------- Public APIs ---------- */
-app.get("/api/config",(req,res)=>res.json({googleClientId:GOOGLE_CLIENT_ID||null, demoPay:!sepayOn, price:proPrice()}));
+app.get("/api/config",(req,res)=>res.json({googleClientId:GOOGLE_CLIENT_ID||null, demoPay:!sepayOn, prices:prices()}));
 
 app.get("/api/curriculum",(req,res)=>{
   const grades=db.prepare("SELECT * FROM grades ORDER BY sort,id").all().map(g=>({
@@ -153,16 +172,18 @@ app.post("/api/progress", auth, (req,res)=>{
 
 /* ---------- Thanh toán SePay (VietQR tự sinh) ---------- */
 app.post("/api/pay/create", auth, (req,res)=>{
-  if(req.user.pro) return res.json({already:true});
-  if(!sepayOn){ // DEMO
-    db.prepare("UPDATE users SET pro=1 WHERE id=?").run(req.user.id);
-    db.prepare("INSERT INTO payments(order_code,user_id,amount,status,channel) VALUES(?,?,?,?,?)")
-      .run(Number(String(Date.now()).slice(-9)), req.user.id, proPrice(), "paid", "demo");
+  const plan = PLANS.includes(req.body.plan) ? req.body.plan : "premium";
+  const cur = safeUser(req.user).plan;
+  if(cur==="family" || cur===plan) return res.json({already:true});
+  if(!sepayOn){
+    db.prepare("UPDATE users SET pro=1, plan=? WHERE id=?").run(plan, req.user.id);
+    db.prepare("INSERT INTO payments(order_code,user_id,amount,status,channel,plan) VALUES(?,?,?,?,?,?)")
+      .run(Number(String(Date.now()).slice(-9)), req.user.id, planPrice(plan), "paid", "direct", plan);
     return res.json({demo:true});
   }
   const orderCode=Number(String(Date.now()).slice(-9));
-  const amount=proPrice();
-  db.prepare("INSERT INTO payments(order_code,user_id,amount) VALUES(?,?,?)").run(orderCode, req.user.id, amount);
+  const amount=planPrice(plan);
+  db.prepare("INSERT INTO payments(order_code,user_id,amount,plan) VALUES(?,?,?,?)").run(orderCode, req.user.id, amount, plan);
   const code="PIPI"+orderCode;
   const qrUrl="https://qr.sepay.vn/img?acc="+encodeURIComponent(SEPAY_ACC)
     +"&bank="+encodeURIComponent(SEPAY_BANK)
@@ -186,7 +207,11 @@ app.post("/api/pay/webhook/sepay",(req,res)=>{
     const pay=db.prepare("SELECT * FROM payments WHERE order_code=?").get(oc);
     if(pay && pay.status!=="paid" && amountIn>=pay.amount){
       db.prepare("UPDATE payments SET status='paid' WHERE order_code=?").run(oc);
-      db.prepare("UPDATE users SET pro=1, pro_until=date('now','+1 year') WHERE id=?").run(pay.user_id);
+      const plan = PLANS.includes(pay.plan) ? pay.plan : "premium";
+      if(plan==="family")
+        db.prepare("UPDATE users SET pro=1, plan='family', pro_until=NULL WHERE id=?").run(pay.user_id);
+      else
+        db.prepare("UPDATE users SET pro=1, plan=?, pro_until=date('now','+1 year') WHERE id=?").run(plan, pay.user_id);
     }
   }
   res.json({success:true});
@@ -198,11 +223,12 @@ app.get("/api/admin/me", adminOnly, (req,res)=>res.json(safeUser(req.user)));
 app.get("/api/admin/users", adminOnly, (req,res)=>{
   const q="%"+(req.query.q||"")+"%";
   res.json({users:db.prepare(
-    "SELECT id,email,name,pro,created_at FROM users WHERE email LIKE ? OR name LIKE ? ORDER BY id DESC LIMIT 500"
+    "SELECT id,email,name,pro,plan,created_at FROM users WHERE email LIKE ? OR name LIKE ? ORDER BY id DESC LIMIT 500"
   ).all(q,q)});
 });
-app.post("/api/admin/users/:id/pro", adminOnly, (req,res)=>{
-  db.prepare("UPDATE users SET pro=? WHERE id=?").run(req.body.pro?1:0, req.params.id);
+app.post("/api/admin/users/:id/plan", adminOnly, (req,res)=>{
+  const plan = ["free","basic","premium","family"].includes(req.body.plan) ? req.body.plan : "free";
+  db.prepare("UPDATE users SET plan=?, pro=? WHERE id=?").run(plan, plan==="free"?0:1, req.params.id);
   res.json({ok:true});
 });
 
@@ -210,7 +236,7 @@ app.get("/api/admin/revenue", adminOnly, (req,res)=>{
   const t=db.prepare("SELECT COALESCE(SUM(amount),0) s, COUNT(*) c FROM payments WHERE status='paid'").get();
   const month=db.prepare("SELECT COALESCE(SUM(amount),0) s FROM payments WHERE status='paid' AND strftime('%Y-%m',created_at)=strftime('%Y-%m','now','localtime')").get();
   const today=db.prepare("SELECT COALESCE(SUM(amount),0) s FROM payments WHERE status='paid' AND date(created_at)=date('now','localtime')").get();
-  const rows=db.prepare(`SELECT p.order_code, u.email, p.amount, p.channel, p.status, p.created_at
+  const rows=db.prepare(`SELECT p.order_code, u.email, p.amount, p.plan, p.channel, p.status, p.created_at
     FROM payments p LEFT JOIN users u ON u.id=p.user_id ORDER BY p.created_at DESC LIMIT 1000`).all();
   res.json({totals:{all:t.s, count:t.c, month:month.s, today:today.s}, rows});
 });
@@ -220,10 +246,11 @@ app.get("/api/admin/revenue.xlsx", adminOnly, async (req,res)=>{
   const ws=wb.addWorksheet("Doanh thu");
   ws.columns=[
     {header:"Mã đơn",key:"order_code",width:14},{header:"Email khách",key:"email",width:30},
-    {header:"Số tiền (VND)",key:"amount",width:16},{header:"Kênh",key:"channel",width:10},
-    {header:"Trạng thái",key:"status",width:12},{header:"Thời gian",key:"created_at",width:22}];
+    {header:"Gói",key:"plan",width:12},{header:"Số tiền (VND)",key:"amount",width:16},
+    {header:"Kênh",key:"channel",width:10},{header:"Trạng thái",key:"status",width:12},
+    {header:"Thời gian",key:"created_at",width:22}];
   ws.getRow(1).font={bold:true};
-  db.prepare(`SELECT p.order_code, u.email, p.amount, p.channel, p.status, p.created_at
+  db.prepare(`SELECT p.order_code, u.email, p.plan, p.amount, p.channel, p.status, p.created_at
     FROM payments p LEFT JOIN users u ON u.id=p.user_id ORDER BY p.created_at DESC`).all()
     .forEach(r=>ws.addRow(r));
   res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -231,11 +258,15 @@ app.get("/api/admin/revenue.xlsx", adminOnly, async (req,res)=>{
   await wb.xlsx.write(res); res.end();
 });
 
-app.get("/api/admin/settings", adminOnly, (req,res)=>res.json({pro_price:proPrice()}));
+app.get("/api/admin/settings", adminOnly, (req,res)=>res.json(prices()));
 app.post("/api/admin/settings", adminOnly, (req,res)=>{
-  const p=parseInt(req.body.pro_price,10);
-  if(!p||p<1000) return res.status(400).json({error:"Giá không hợp lệ"});
-  setSetting("pro_price",p); res.json({ok:true, pro_price:p});
+  const b=req.body||{};
+  for(const p of PLANS){
+    const sale=parseInt(b["price_"+p],10), list=parseInt(b["list_"+p],10);
+    if(sale>=1000) setSetting("price_"+p, sale);
+    if(list>=1000) setSetting("list_"+p, list);
+  }
+  res.json({ok:true, ...prices()});
 });
 
 /* CRUD nội dung */

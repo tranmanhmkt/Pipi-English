@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#FFD9EA">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="mobile-web-app-capable" content="yes">
@@ -82,6 +83,10 @@ body{
   0%,100%{transform:translateY(0) rotate(-4deg);}
   50%{transform:translateY(-14px) rotate(4deg);}
 }
+.logoWrap{width:min(440px,90vw); margin-top:2px;}
+.logoWrap svg{width:100%; height:auto; overflow:visible; filter:drop-shadow(0 6px 8px rgba(107,74,102,.14));}
+.logoWrap .chickG{transform-origin:85px 97px; animation:chickBob 2.4s ease-in-out infinite;}
+@keyframes chickBob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-8px) rotate(2deg);}}
 .logo{font-size:clamp(36px,7vw,52px); font-weight:800; text-align:center;}
 .logo span{color:var(--accent-dark);}
 .logo .pi{
@@ -312,9 +317,9 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
 @media (max-width:480px){ .pairRow .pairCard{width:140px; height:70px;} .pairCols{gap:14px;} }
 .imgCard .pe{font-size:42px;}
 .wordCard{font-size:19px; min-width:86px;}
-.demoRow{display:flex; align-items:center; gap:12px; justify-content:center;}
-.pairCard.demo{cursor:default; background:#EAFBF3; box-shadow:0 4px 0 var(--tile); min-width:82px;}
-.demoArrow{font-size:26px; font-weight:800; color:var(--accent-dark);}
+.exampleRow{display:flex; align-items:center; gap:12px; justify-content:center;}
+.pairCard.example{cursor:default; background:#EAFBF3; box-shadow:0 4px 0 var(--tile); min-width:82px;}
+.exampleArrow{font-size:26px; font-weight:800; color:var(--accent-dark);}
 .tickDemo{width:34px; height:34px; border-radius:50%; background:var(--tile); color:#fff;
   display:flex; align-items:center; justify-content:center; font-weight:800; box-shadow:0 3px 0 var(--tile-dark);}
 .modeRow{display:flex; gap:10px; width:100%; justify-content:center;}
@@ -408,7 +413,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   .stars{font-size:44px;}
   .endTitle{font-size:23px;}
   .feedback{font-size:17px;}
-  .demoRow{gap:8px;}
+  .exampleRow{gap:8px;}
   .floatPts{font-size:21px;}
 }
 /* Màn hình rất nhỏ (<360px) */
@@ -418,6 +423,70 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   .imgCard .pe{font-size:32px;}
   .wordCard{font-size:15px;}
 }
+/* ===== Tài khoản & thanh toán ===== */
+.userRow{width:100%; display:flex; justify-content:flex-end; align-items:center; gap:8px; min-height:38px;}
+.userChip{
+  background:rgba(255,255,255,.92); border-radius:999px; padding:7px 14px;
+  font-weight:700; font-size:14px; box-shadow:0 2px 0 rgba(32,53,92,.12);
+}
+.proTag{
+  background:linear-gradient(180deg,var(--gold),#E8A800); color:#6B4A00;
+  font-size:11px; font-weight:800; padding:2px 8px; border-radius:999px;
+}
+.proTag.basic{background:linear-gradient(180deg,#7CCBEF,#3E92C2); color:#fff;}
+.proTag.family{background:linear-gradient(180deg,#B79CFF,#7A5CD6); color:#fff;}
+.miniBtn{
+  border:none; cursor:pointer; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13px;
+  background:rgba(255,255,255,.92); color:var(--ink); padding:7px 13px; border-radius:999px;
+  box-shadow:0 2px 0 rgba(32,53,92,.15); transition:transform .08s;
+}
+.miniBtn:active{transform:translateY(2px);}
+.miniBtn.gold{background:linear-gradient(180deg,var(--gold),#E8A800); color:#6B4A00; box-shadow:0 2px 0 #B98700;}
+.modalWrap{
+  position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+  background:rgba(107,74,102,.4); backdrop-filter:blur(3px); padding:16px;
+}
+.modal{
+  position:relative; background:#fff; border-radius:28px; padding:26px 20px;
+  max-height:92vh; overflow-y:auto;
+  width:min(380px,94vw); display:flex; flex-direction:column; align-items:center; gap:11px;
+  box-shadow:0 12px 0 rgba(32,53,92,.12), 0 28px 50px rgba(32,53,92,.3); text-align:center;
+}
+.modalClose{
+  position:absolute; top:12px; right:12px; border:none; cursor:pointer;
+  width:34px; height:34px; border-radius:50%; background:var(--slot);
+  font-size:16px; font-weight:800; color:var(--ink);
+}
+.modalTitle{font-size:22px; font-weight:800;}
+.authTabs{display:flex; gap:8px; width:100%;}
+.authTab{
+  flex:1; border:none; cursor:pointer; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px;
+  padding:9px; border-radius:12px; background:var(--slot); color:var(--ink);
+}
+.authTab.active{background:linear-gradient(180deg,var(--accent),var(--accent-dark)); color:#fff;}
+.inp{
+  width:100%; border:2px solid var(--slot-border); border-radius:14px;
+  padding:11px 14px; font-family:'Baloo 2',sans-serif; font-weight:600; font-size:16px; color:var(--ink);
+  outline:none; background:#FFFBF4;
+}
+.inp:focus{border-color:var(--accent);}
+.orLine{font-size:13px; font-weight:700; opacity:.5;}
+.planGrid{display:flex; gap:8px; width:100%;}
+.planCard{
+  flex:1; border:3px solid var(--slot-border); border-radius:16px; padding:10px 6px;
+  background:#FFFBF4; cursor:pointer; font-family:'Baloo 2',sans-serif; color:var(--ink);
+  display:flex; flex-direction:column; align-items:center; gap:2px; transition:transform .08s;
+}
+.planCard.sel{border-color:var(--accent-dark); background:#FFF0F6; box-shadow:0 4px 0 var(--accent-shadow);}
+.planCard:active{transform:translateY(2px);}
+.planName{font-size:15px; font-weight:800;}
+.planOld{font-size:12px; font-weight:700; opacity:.5; text-decoration:line-through;}
+.planNew{font-size:17px; font-weight:800; color:var(--accent-dark);}
+.planSub{font-size:10px; font-weight:700; opacity:.6; text-align:center; line-height:1.3;}
+.cmpTable{width:100%; border-collapse:collapse; font-size:12px; font-weight:700;}
+.cmpTable th{font-size:11px; opacity:.65; padding:4px 2px;}
+.cmpTable td{padding:4px 2px; border-top:1.5px solid #FBEAF2; text-align:center;}
+.cmpTable td:first-child{text-align:left; opacity:.8;}
 .confetti{position:fixed; top:-12px; font-size:22px; animation:fall linear forwards; pointer-events:none; z-index:50;}
 @keyframes fall{to{transform:translateY(105vh) rotate(540deg); opacity:.9;}}
 
@@ -433,8 +502,67 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
 
 <!-- ===== TRANG CHỦ ===== -->
 <div class="screen active" id="homeScreen">
-  <div class="mascot">🐥</div>
-  <div class="logo"><span class="pi">PiPi</span><span>English</span></div>
+  <div class="userRow" id="userRow"></div>
+  <div class="logoWrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 170" font-family="'Baloo 2','Comic Sans MS',cursive">
+  <defs>
+    <linearGradient id="gradY" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE68A"/><stop offset="1" stop-color="#FFC93C"/>
+    </linearGradient>
+    <linearGradient id="gradP" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF9DBE"/><stop offset="1" stop-color="#F26D9D"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Bóng đổ dưới chân gà -->
+  <ellipse cx="85" cy="152" rx="42" ry="8" fill="#E8A8C4" opacity="0.3"/>
+
+  <g class="chickG">
+    <!-- Thân gà con -->
+    <ellipse cx="85" cy="97" rx="52" ry="50" fill="url(#gradY)"/>
+    <!-- Cánh -->
+    <ellipse cx="45" cy="108" rx="15" ry="22" fill="#FFD34D" transform="rotate(22 45 108)"/>
+    <ellipse cx="125" cy="108" rx="15" ry="22" fill="#FFD34D" transform="rotate(-22 125 108)"/>
+    <!-- Chỏm lông -->
+    <path d="M74 50 Q77 34 88 31" stroke="#F2A63B" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <path d="M90 48 Q97 36 107 38" stroke="#F2A63B" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <!-- Mắt to long lanh -->
+    <circle cx="68" cy="88" r="8.5" fill="#4A3B4E"/>
+    <circle cx="71" cy="85" r="2.8" fill="#fff"/>
+    <circle cx="103" cy="88" r="8.5" fill="#4A3B4E"/>
+    <circle cx="106" cy="85" r="2.8" fill="#fff"/>
+    <!-- Mỏ -->
+    <path d="M77 99 Q85.5 92 94 99 Q85.5 112 77 99 Z" fill="#FF9D4D"/>
+    <!-- Má hồng -->
+    <circle cx="55" cy="102" r="7.5" fill="#FFB3C9" opacity="0.85"/>
+    <circle cx="116" cy="102" r="7.5" fill="#FFB3C9" opacity="0.85"/>
+    <!-- Mũ tốt nghiệp -->
+    <path d="M92 52 q22 12 34 5 l0 13 q-18 9 -34 -4 Z" fill="#6A4FC0"/>
+    <path d="M94 36 L142 47 L114 64 L70 51 Z" fill="#7A5CD6"/>
+    <line x1="140" y1="49" x2="140" y2="66" stroke="#FFC93C" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="140" cy="70" r="4.5" fill="#FFC93C"/>
+  </g>
+
+  <!-- Bong bóng chữ Abc -->
+  <g>
+    <rect x="152" y="14" width="90" height="46" rx="15" fill="#fff" stroke="#F6C6DC" stroke-width="3"/>
+    <path d="M166 57 L155 74 L180 62 Z" fill="#fff" stroke="#F6C6DC" stroke-width="3" stroke-linejoin="round"/>
+    <text x="197" y="46" text-anchor="middle" font-size="25" font-weight="800" letter-spacing="2">
+      <tspan fill="#5FB8E8">A</tspan><tspan fill="#63C9A8">b</tspan><tspan fill="#FF9DBE">c</tspan>
+    </text>
+  </g>
+
+  <!-- Wordmark PiPi -->
+  <g transform="rotate(-3 316 80)">
+    <rect x="256" y="54" width="120" height="62" rx="18" fill="#D14E81"/>
+    <rect x="256" y="48" width="120" height="62" rx="18" fill="url(#gradP)"/>
+    <text x="316" y="93" text-anchor="middle" font-size="42" font-weight="800" fill="#fff">PiPi</text>
+  </g>
+  <!-- Wordmark English -->
+  <text x="392" y="96" font-size="44" font-weight="800" fill="#6B4A66">English</text>
+  <!-- Ngôi sao trang trí -->
+  <text x="530" y="52" font-size="24">⭐</text>
+  <text x="240" y="140" font-size="18">🌸</text>
+</svg></div>
   <div class="tagline">Learn English with PiPi! · Grade 1 → Grade 5</div>
   <div class="gradeGrid" id="gradeGrid"></div>
   <button class="gradeCard" style="width:100%;" onclick="renderTyping(); go('typingScreen')">
@@ -442,7 +570,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
     <div><div class="gradeName">Typing Practice</div>
     <div class="gradeSub">13 modules · With Key Hints & No Hints · 630 words</div></div>
   </button>
-  <div class="note">Demo version — progress is saved for this play session only.</div>
+  <div class="note">Sign in to save your progress and unlock PRO content!</div>
   <div class="brand">🐥 PiPi English · Happy learning every day!</div>
 </div>
 
@@ -451,7 +579,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   <div class="header">
     <button class="backBtn" onclick="go('homeScreen')">← Home</button>
     <div class="headerTitle">⌨️ Typing Practice</div>
-    <div class="headerSpace"></div>
+    <button class="backBtn" onclick="goHome()">🏠</button>
   </div>
   <div class="modeRow">
     <button class="modeBtn active" id="modeKey" onclick="setTypingMode('key')">⌨️ With Key Hints</button>
@@ -465,7 +593,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   <div class="header">
     <button class="backBtn" onclick="go('homeScreen')">← Grades</button>
     <div class="headerTitle" id="unitScreenTitle"></div>
-    <div class="headerSpace"></div>
+    <button class="backBtn" onclick="goHome()">🏠</button>
   </div>
   <div class="unitList" id="unitList"></div>
 </div>
@@ -475,7 +603,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   <div class="header">
     <button class="backBtn" onclick="go('unitScreen')">← Units</button>
     <div class="headerTitle" id="mapScreenTitle"></div>
-    <div class="headerSpace"></div>
+    <button class="backBtn" onclick="goHome()">🏠</button>
   </div>
   <div class="mapList" id="mapList"></div>
 </div>
@@ -484,6 +612,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
 <div class="screen" id="activityScreen">
   <div class="topbar">
     <button class="backBtn" onclick="quitActivity()">✕</button>
+    <button class="backBtn" onclick="goHome()">🏠</button>
     <div class="progressWrap"><div class="progressBar" id="actProgress"></div></div>
     <div class="pill" id="actCounter">1/6</div>
     <div class="pill scorePill" id="actScore">0</div>
@@ -498,9 +627,79 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
     <div class="endTitle" id="resTitle">Well done!</div>
     <div class="endStats" id="resStats"></div>
     <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+      <button class="btn ghost" onclick="goHome()">🏠 Home</button>
       <button class="btn ghost" onclick="replayActivity()">Play again</button>
       <button class="btn" id="resNextBtn" onclick="nextFromResult()">Continue ▶</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== Modal đăng nhập / đăng ký ===== -->
+<div class="modalWrap" id="authModal" style="display:none">
+  <div class="modal">
+    <button class="modalClose" onclick="hideModal('authModal')">✕</button>
+    <div style="font-size:54px; line-height:1;">🐥</div>
+    <div class="modalTitle">Welcome to PiPi English!</div>
+    <div class="authTabs">
+      <button class="authTab active" id="tabLogin" onclick="setAuthTab('login')">Sign in</button>
+      <button class="authTab" id="tabReg" onclick="setAuthTab('reg')">Register</button>
+    </div>
+    <input class="inp" id="aName" type="text" placeholder="Your name" style="display:none" autocomplete="name">
+    <input class="inp" id="aEmail" type="email" placeholder="Email" autocomplete="email">
+    <input class="inp" id="aPass" type="password" placeholder="Password (6+ characters)" autocomplete="current-password">
+    <div class="feedback bad" id="authErr" style="min-height:20px; font-size:14px;"></div>
+    <button class="btn" id="authGo" onclick="submitAuth()" style="width:100%;">Sign in</button>
+    <div class="orLine">— or —</div>
+    <div id="gBtn"></div>
+  </div>
+</div>
+
+<!-- ===== Modal nâng cấp PRO ===== -->
+<div class="modalWrap" id="payModal" style="display:none">
+  <div class="modal">
+    <button class="modalClose" onclick="hideModal('payModal')">✕</button>
+    <div style="font-size:54px; line-height:1;">👑</div>
+    <div class="modalTitle">Upgrade to PiPi PRO</div>
+    <div id="payMain" style="width:100%;">
+      <div class="planGrid">
+        <button class="planCard" data-plan="basic" onclick="pickPlan('basic')">
+          <div class="planName">Basic</div>
+          <div class="planOld" id="old_basic">499.000₫</div>
+          <div class="planNew" id="new_basic">149.000₫</div>
+          <div class="planSub">First 21 units<br>1 year</div>
+        </button>
+        <button class="planCard sel" data-plan="premium" onclick="pickPlan('premium')">
+          <div class="planName">Premium ⭐</div>
+          <div class="planOld" id="old_premium">799.000₫</div>
+          <div class="planNew" id="new_premium">299.000₫</div>
+          <div class="planSub">First 42 units<br>1 year</div>
+        </button>
+        <button class="planCard" data-plan="family" onclick="pickPlan('family')">
+          <div class="planName">Family 👑</div>
+          <div class="planOld" id="old_family">1.999.000₫</div>
+          <div class="planNew" id="new_family">499.000₫</div>
+          <div class="planSub">All 105 units<br>Lifetime</div>
+        </button>
+      </div>
+      <table class="cmpTable">
+        <tr><th></th><th>Free</th><th>Basic</th><th>Prem ⭐</th><th>Family 👑</th></tr>
+        <tr><td>3 trial units</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>21 units</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>42 units</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>All 105 units</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+        <tr><td>Typing</td><td>Module 1</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>New updates</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+        <tr><td>Lifetime</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
+      </table>
+      <button class="btn" onclick="startPay()" style="width:100%;" id="payBtn">Pay now 💳</button>
+    </div>
+    <div id="payQR" style="display:none">
+      <img id="qrImg" alt="QR" style="width:230px; height:230px; border-radius:16px; border:3px solid var(--slot-border);">
+      <div style="font-weight:800; font-size:15px; margin-top:6px;">Scan with your banking app 📱</div>
+      <div class="hint">Amount & message are pre-filled — do not change them.</div>
+      <div class="feedback good" id="qrStatus" style="font-size:15px;">Waiting for payment…</div>
+    </div>
+    <div class="hint" id="payHint">Secure payment</div>
   </div>
 </div>
 
@@ -685,8 +884,17 @@ if(typeof speechSynthesis!=="undefined"){
   pickBestVoice();
   speechSynthesis.onvoiceschanged=pickBestVoice;
 }
+/* Có file audio riêng của từ (gán trong Admin) → phát file, mọi thiết bị nghe giống nhau.
+   Không có → dùng giọng en-US đã chọn (pickBestVoice). */
+const AUDIO_MAP={};
+function rebuildAudioMap(){
+  for(const k in AUDIO_MAP) delete AUDIO_MAP[k];
+  CURRICULUM.forEach(g=>g.units.forEach(u=>u.words.forEach(w=>{ if(w.audio) AUDIO_MAP[w.en]=w.audio; })));
+}
 function speak(text){
-  try{ speechSynthesis.cancel();
+  try{
+    if(AUDIO_MAP[text]){ new Audio(AUDIO_MAP[text]).play().catch(()=>{}); return; }
+    speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
     u.lang="en-US"; u.rate=0.85; u.pitch=0.88; u.volume=1;
     if(chosenVoice) u.voice=chosenVoice;
@@ -774,7 +982,7 @@ function sndFinish(){ // hoan hô lớn: nhạc chiến thắng + vỗ tay + ti�
     [523,659,784,1047,1319].forEach((f,i)=>tone(f, i*0.12, 0.3, "triangle", 0.2));
     tone(1568, 0.62, 0.5, "triangle", 0.22);
     for(let i=0;i<14;i++) clap(0.3+i*0.09);
-    const u=new SpeechSynthesisUtterance("Yay!");
+    const u=new SpeechSynthesisUtterance("Yeeeee!");
     u.lang="en-US"; u.pitch=1.15; u.rate=1.05; u.volume=0.9;
     if(chosenVoice) u.voice=chosenVoice;
     speechSynthesis.speak(u);
@@ -832,8 +1040,11 @@ function renderUnits(){
         <div class="unitName">${u.name} <span class="badge ${u.pro?'pro':'free'}">${u.pro?'PRO':'FREE'}</span></div>
         <div class="unitWords">${u.words.map(w=>w.en).join(" · ")}</div>
       </div>
-      <div class="unitStars">${stars}⭐</div>`;
-    b.onclick=()=>{ cur.u=ui; renderMap(); go("mapScreen"); };
+      <div class="unitStars">${canPlayUnit(cur.g,ui,u)? stars+'⭐' : '🔒'}</div>`;
+    b.onclick=()=>{
+      if(!canPlayUnit(cur.g, ui, u)){ showPay(); return; }
+      cur.u=ui; renderMap(); go("mapScreen");
+    };
     list.appendChild(b);
   });
 }
@@ -865,6 +1076,10 @@ function startActivity(){
   const starters={flash:startFlash, listen:startListen, match:startMatch, anagram:startAnagram, type:startType, quiz:startQuiz};
   starters[ACTIVITIES[cur.a].key]();
 }
+function goHome(){
+  speechSynthesis.cancel();
+  renderHome(); go("homeScreen");
+}
 function quitActivity(){
   speechSynthesis.cancel();
   if(session && session.isTyping && !session.unitTyping){ renderTyping(); go("typingScreen"); return; }
@@ -890,6 +1105,7 @@ function finishActivity(correct,total){
   const stars=starsOf(ratio);
   const p=progress[unitKey()]||(progress[unitKey()]={});
   p[cur.a]=Math.max(p[cur.a]||0, stars);
+  syncStars("u:"+unitKey()+":"+cur.a, stars);
   $("resStars").textContent=starStr(stars);
   $("resTitle").textContent= stars===3 ? "🐥 PiPi is so proud of you!" : stars===2 ? "🐥 Great job!" : "🐥 Let's practice again with PiPi!";
   $("resStats").textContent= total? `${correct}/${total} correct · ${session.score||0} points ⭐` : "New words completed!";
@@ -962,10 +1178,10 @@ function startMatch(){
   $("actCounter").textContent="Match "+session.words.length+" pairs";
   $("actCard").innerHTML=`
     <div class="hint" style="font-size:18px; font-weight:800; opacity:.8;">Example</div>
-    <div class="demoRow">
-      <div class="pairCard demo"><span class="pe">🐤</span></div>
-      <div class="demoArrow">➜</div>
-      <div class="pairCard demo">chick</div>
+    <div class="exampleRow">
+      <div class="pairCard example"><span class="pe">🐤</span></div>
+      <div class="exampleArrow">➜</div>
+      <div class="pairCard example">chick</div>
       <div class="tickDemo">✓</div>
     </div>
     <div class="hint">Tap a picture, then tap its word!</div>
@@ -1175,20 +1391,23 @@ function pickQuiz(btn, ok, w){
 }
 
 /* ===== ⌨️ Typing Practice — 13 modules (module 1 free · 30 words, rest 50 words) × 2 chế độ ===== */
-const ALLWORDS = CURRICULUM.flatMap(g=>g.units.flatMap(u=>u.words));
+let ALLWORDS=[], TYPING_MODULES=[];
 const TYPING_MODULE_NAMES=[
   "Baby Steps","First Hops","Little Explorer","Busy Bee","Bright Sparks",
   "Clever Chick","Word Wizard","Rising Star","Super Speller","Golden Feather",
   "Typing Champion","Master Builder","PiPi Superstar"
 ];
-const TYPING_MODULES = (()=>{
+function buildTypingModules(){
+  ALLWORDS = CURRICULUM.flatMap(g=>g.units.flatMap(u=>u.words));
   const sizes=[30,50,50,50,50,50,50,50,50,50,50,50,50]; let off=0;
-  return sizes.map((n,i)=>{
-    const m={ i, name:"Module "+(i+1)+" · "+(TYPING_MODULE_NAMES[i]||("Set "+(i+1))), from:off+1, to:off+n,
-              words:ALLWORDS.slice(off,off+n), free:i===0 };
+  TYPING_MODULES = sizes.map((n,i)=>{
+    const words=ALLWORDS.slice(off,off+n);
+    const m={ i, name:"Module "+(i+1)+" · "+(TYPING_MODULE_NAMES[i]||("Set "+(i+1))), from:off+1, to:off+words.length,
+              words, free:i===0 };
     off+=n; return m;
-  });
-})();
+  }).filter(m=>m.words.length>0);
+}
+buildTypingModules();
 let typingMode="key";
 const typingProgress={};
 
@@ -1207,8 +1426,11 @@ function renderTyping(){
     b.innerHTML='<div class="unitEmoji">'+(typingMode==="key"?"⌨️":"🧠")+'</div>'+
       '<div class="unitInfo"><div class="unitName">'+mod.name+' <span class="badge '+(mod.free?"free":"pro")+'">'+(mod.free?"FREE":"PRO")+'</span></div>'+
       '<div class="unitWords">'+mod.words.length+' words · #'+mod.from+'–'+mod.to+'</div></div>'+
-      '<div class="unitStars">'+(st? starStr5(st) : "")+'</div>';
-    b.onclick=()=>startTyping(mod.i);
+      '<div class="unitStars">'+((!mod.free && !isPro())? "🔒" : (st? "⭐".repeat(st) : ""))+'</div>';
+    b.onclick=()=>{
+      if(!mod.free && !isPro()){ showPay(); return; }
+      startTyping(mod.i);
+    };
     list.appendChild(b);
   });
 }
@@ -1374,6 +1596,7 @@ function finishTyping(){
   const stars=Math.max(0, 5-deduct);
   const key=session.mode+"-"+session.mi;
   typingProgress[key]=Math.max(typingProgress[key]||0, stars);
+  syncStars("t:"+key, stars);
   $("resStars").textContent=starStr5(stars);
   $("resTitle").textContent= stars>=5 ? "🐥 Perfect! PiPi is so proud of you!" : stars>=3 ? "🐥 Great typing!" : stars>=1 ? "🐥 Keep practicing with PiPi!" : "🐥 Let's try again with PiPi!";
   $("resStats").textContent=session.perfect+"/"+total+" perfect words · "+wrongWords+" word"+(wrongWords===1?"":"s")+" with mistakes · "+(session.score||0)+" points ⭐";
@@ -1400,6 +1623,185 @@ document.addEventListener("pointerdown",()=>{
     u.volume=0; speechSynthesis.speak(u);
   }catch(e){}
 },{passive:true});
+
+/* ===== 👤 Tài khoản & PRO (chỉ hoạt động khi chạy qua server; mở file trực tiếp = chế độ khách, mở hết) ===== */
+let user=null, serverMode=false, appConfig={};
+/* Gói: Free = 3 unit đầu mỗi lớp (unit không gắn PRO) · Basic = 21 unit đầu ·
+   Premium = 42 unit đầu · Family = toàn bộ + vĩnh viễn */
+const PLAN_QUOTA={ free:0, basic:21, premium:42, family:Infinity };
+function userPlan(){ return serverMode ? (user ? (user.plan||"free") : "free") : "family"; }
+function unitQuota(){ return PLAN_QUOTA[userPlan()] ?? 0; }
+function unitGlobalIndex(gi,ui){ let n=0; for(let i=0;i<gi;i++) n+=CURRICULUM[i].units.length; return n+ui; }
+function canPlayUnit(gi,ui,u){ return !u.pro || unitGlobalIndex(gi,ui) < unitQuota(); }
+function isPro(){ return userPlan()!=="free"; }
+async function api(url,body){
+  const r=await fetch(url,{
+    method: body!==undefined ? "POST":"GET",
+    headers:{"Content-Type":"application/json"},
+    credentials:"same-origin",
+    body: body!==undefined ? JSON.stringify(body):undefined
+  });
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error||"Something went wrong");
+  return d;
+}
+async function initAuth(){
+  try{ appConfig=await api("/api/config"); serverMode=true; }
+  catch(e){ serverMode=false; renderUser(); return; }
+  try{
+    const cur=await api("/api/curriculum");
+    if(cur.grades && cur.grades.length){
+      CURRICULUM.splice(0, CURRICULUM.length, ...cur.grades);
+      buildTypingModules(); rebuildAudioMap(); renderHome();
+    }
+  }catch(e){}
+  try{ user=await api("/api/me"); }catch(e){ user=null; }
+  renderUser();
+  if(user) loadCloudProgress();
+  if(appConfig.googleClientId) initGoogle();
+  if(new URLSearchParams(location.search).get("paid")==="1"){
+    history.replaceState({},"","/");
+    try{
+      user=await api("/api/me"); renderUser();
+      if(user && user.pro) celebrate();
+    }catch(e){}
+  }
+}
+function renderUser(){
+  const row=$("userRow"); if(!row) return;
+  if(!serverMode){ row.innerHTML=""; return; }
+  if(user){
+    const pb = user.plan==="family" ? '<span class="proTag family">FAMILY 👑</span> '
+             : user.plan==="premium" ? '<span class="proTag">PREMIUM ⭐</span> '
+             : user.plan==="basic" ? '<span class="proTag basic">BASIC</span> ' : '';
+    row.innerHTML=
+      '<div class="userChip">'+pb+
+      '🐥 '+((user.name||user.email.split("@")[0]).replace(/</g,"&lt;"))+'</div>'+
+      (user.plan==="family"?'':'<button class="miniBtn gold" onclick="showPay()">👑 Upgrade</button>')+
+      '<button class="miniBtn" onclick="doLogout()">Sign out</button>';
+  } else {
+    row.innerHTML='<button class="miniBtn" onclick="showAuth()">👤 Sign in / Register</button>';
+  }
+}
+let authTab="login";
+function showAuth(){ $("authModal").style.display="flex"; setAuthTab("login"); }
+let selPlan="premium";
+const fmtVnd=n=>Number(n||0).toLocaleString("vi-VN")+"₫";
+function pickPlan(p){
+  selPlan=p;
+  document.querySelectorAll(".planCard").forEach(c=>c.classList.toggle("sel", c.dataset.plan===p));
+  updatePayBtn();
+}
+function updatePayBtn(){
+  const pr=(appConfig.prices||{})[selPlan];
+  $("payBtn").textContent="Pay "+(pr?fmtVnd(pr.sale):"")+" 💳";
+}
+function fillPrices(){
+  const pr=appConfig.prices||{};
+  ["basic","premium","family"].forEach(p=>{
+    if(pr[p]){ $("old_"+p).textContent=fmtVnd(pr[p].list); $("new_"+p).textContent=fmtVnd(pr[p].sale); }
+  });
+  updatePayBtn();
+}
+function showPay(){
+  if(serverMode && !user){ showAuth(); return; }
+  fillPrices();
+  $("payHint").textContent="Secure payment";
+  $("payModal").style.display="flex";
+}
+function hideModal(id){
+  $(id).style.display="none";
+  if(id==="payModal"){
+    clearInterval(payTimer);
+    if($("payMain")){ $("payMain").style.display="block"; $("payQR").style.display="none"; $("qrStatus").textContent="Waiting for payment…"; }
+  }
+}
+function setAuthTab(t){
+  authTab=t;
+  $("tabLogin").classList.toggle("active",t==="login");
+  $("tabReg").classList.toggle("active",t==="reg");
+  $("aName").style.display = t==="reg" ? "block":"none";
+  $("authGo").textContent = t==="login" ? "Sign in":"Create account";
+  $("authErr").textContent="";
+}
+async function submitAuth(){
+  const email=$("aEmail").value.trim(), password=$("aPass").value, name=$("aName").value.trim();
+  $("authErr").textContent="";
+  try{
+    user=await api(authTab==="login"?"/api/login":"/api/register",{email,password,name});
+    hideModal("authModal"); renderUser(); loadCloudProgress();
+  }catch(e){ $("authErr").textContent=e.message; }
+}
+async function doLogout(){
+  try{ await api("/api/logout",{}); }catch(e){}
+  user=null; renderUser();
+}
+function initGoogle(){
+  const s=document.createElement("script");
+  s.src="https://accounts.google.com/gsi/client"; s.async=true;
+  s.onload=()=>{
+    google.accounts.id.initialize({
+      client_id:appConfig.googleClientId,
+      callback:async res=>{
+        try{
+          user=await api("/api/google",{credential:res.credential});
+          hideModal("authModal"); renderUser(); loadCloudProgress();
+        }catch(e){ $("authErr").textContent=e.message; }
+      }
+    });
+    google.accounts.id.renderButton($("gBtn"),{theme:"outline",size:"large",shape:"pill",width:250});
+  };
+  document.head.appendChild(s);
+}
+let payTimer=null;
+async function startPay(){
+  try{
+    const d=await api("/api/pay/create",{plan:selPlan});
+    if(d.demo || d.already){
+      user=await api("/api/me");
+      hideModal("payModal"); renderUser(); celebrate();
+    } else if(d.qrUrl){
+      $("payMain").style.display="none";
+      $("payQR").style.display="block";
+      $("qrImg").src=d.qrUrl;
+      $("payHint").textContent="Order: "+d.code;
+      clearInterval(payTimer);
+      payTimer=setInterval(async()=>{
+        try{
+          const s=await api("/api/pay/status?oc="+d.orderCode);
+          if(s.paid){
+            clearInterval(payTimer);
+            $("qrStatus").textContent="✅ Payment received!";
+            user=await api("/api/me"); renderUser();
+            setTimeout(()=>{ hideModal("payModal"); celebrate(); }, 800);
+          }
+        }catch(e){}
+      }, 3000);
+    }
+  }catch(e){ $("payHint").textContent=e.message; }
+}
+async function syncStars(k,stars){
+  if(!serverMode||!user||!stars) return;
+  try{ await api("/api/progress",{k,stars}); }catch(e){}
+}
+async function loadCloudProgress(){
+  try{
+    const d=await api("/api/progress");
+    d.items.forEach(it=>{
+      if(it.k.startsWith("u:")){
+        const parts=it.k.split(":");
+        const p=progress[parts[1]]||(progress[parts[1]]={});
+        p[parts[2]]=Math.max(p[parts[2]]||0, it.stars);
+      } else if(it.k.startsWith("t:")){
+        const key=it.k.slice(2);
+        typingProgress[key]=Math.max(typingProgress[key]||0, it.stars);
+      }
+    });
+    renderHome();
+  }catch(e){}
+}
+rebuildAudioMap();
+initAuth();
 
 renderHome();
 /* Cập nhật lại số liệu khi quay về màn hình */

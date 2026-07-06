@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 170" font-family="'Baloo 2','Comic Sans MS',cursive">
+  <defs>
+    <linearGradient id="gradY" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE68A"/><stop offset="1" stop-color="#FFC93C"/>
+    </linearGradient>
+    <linearGradient id="gradP" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF9DBE"/><stop offset="1" stop-color="#F26D9D"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Bóng đổ dưới chân gà -->
+  <ellipse cx="85" cy="152" rx="42" ry="8" fill="#E8A8C4" opacity="0.3"/>
+
+  <g class="chickG">
+    <!-- Thân gà con -->
+    <ellipse cx="85" cy="97" rx="52" ry="50" fill="url(#gradY)"/>
+    <!-- Cánh -->
+    <ellipse cx="45" cy="108" rx="15" ry="22" fill="#FFD34D" transform="rotate(22 45 108)"/>
+    <ellipse cx="125" cy="108" rx="15" ry="22" fill="#FFD34D" transform="rotate(-22 125 108)"/>
+    <!-- Chỏm lông -->
+    <path d="M74 50 Q77 34 88 31" stroke="#F2A63B" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <path d="M90 48 Q97 36 107 38" stroke="#F2A63B" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <!-- Mắt to long lanh -->
+    <circle cx="68" cy="88" r="8.5" fill="#4A3B4E"/>
+    <circle cx="71" cy="85" r="2.8" fill="#fff"/>
+    <circle cx="103" cy="88" r="8.5" fill="#4A3B4E"/>
+    <circle cx="106" cy="85" r="2.8" fill="#fff"/>
+    <!-- Mỏ -->
+    <path d="M77 99 Q85.5 92 94 99 Q85.5 112 77 99 Z" fill="#FF9D4D"/>
+    <!-- Má hồng -->
+    <circle cx="55" cy="102" r="7.5" fill="#FFB3C9" opacity="0.85"/>
+    <circle cx="116" cy="102" r="7.5" fill="#FFB3C9" opacity="0.85"/>
+    <!-- Mũ tốt nghiệp -->
+    <path d="M92 52 q22 12 34 5 l0 13 q-18 9 -34 -4 Z" fill="#6A4FC0"/>
+    <path d="M94 36 L142 47 L114 64 L70 51 Z" fill="#7A5CD6"/>
+    <line x1="140" y1="49" x2="140" y2="66" stroke="#FFC93C" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="140" cy="70" r="4.5" fill="#FFC93C"/>
+  </g>
+
+  <!-- Bong bóng chữ Abc -->
+  <g>
+    <rect x="152" y="14" width="90" height="46" rx="15" fill="#fff" stroke="#F6C6DC" stroke-width="3"/>
+    <path d="M166 57 L155 74 L180 62 Z" fill="#fff" stroke="#F6C6DC" stroke-width="3" stroke-linejoin="round"/>
+    <text x="197" y="46" text-anchor="middle" font-size="25" font-weight="800" letter-spacing="2">
+      <tspan fill="#5FB8E8">A</tspan><tspan fill="#63C9A8">b</tspan><tspan fill="#FF9DBE">c</tspan>
+    </text>
+  </g>
+
+  <!-- Wordmark PiPi -->
+  <g transform="rotate(-3 316 80)">
+    <rect x="256" y="54" width="120" height="62" rx="18" fill="#D14E81"/>
+    <rect x="256" y="48" width="120" height="62" rx="18" fill="url(#gradP)"/>
+    <text x="316" y="93" text-anchor="middle" font-size="42" font-weight="800" fill="#fff">PiPi</text>
+  </g>
+  <!-- Wordmark English -->
+  <text x="392" y="96" font-size="44" font-weight="800" fill="#6B4A66">English</text>
+  <!-- Ngôi sao trang trí -->
+  <text x="530" y="52" font-size="24">⭐</text>
+  <text x="240" y="140" font-size="18">🌸</text>
+</svg>

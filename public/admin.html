@@ -66,7 +66,7 @@ td .inp{min-width:70px;}
       <input class="inp" id="uSearch" placeholder="Tìm email / tên..." style="max-width:280px" onkeydown="if(event.key==='Enter')loadUsers()">
       <button class="btn sm" onclick="loadUsers()">Tìm</button>
     </div>
-    <table><thead><tr><th>ID</th><th>Email</th><th>Tên</th><th>PRO</th><th>Ngày tạo</th><th></th></tr></thead>
+    <table><thead><tr><th>ID</th><th>Email</th><th>Tên</th><th>Gói</th><th>Ngày tạo</th><th></th></tr></thead>
     <tbody id="uBody"></tbody></table>
   </div>
 
@@ -79,7 +79,7 @@ td .inp{min-width:70px;}
       <div class="stat"><b id="rCount">0</b>Đơn thành công</div>
     </div>
     <button class="btn green" onclick="location.href='/api/admin/revenue.xlsx'">📥 Xuất Excel</button>
-    <table style="margin-top:10px"><thead><tr><th>Mã đơn</th><th>Email</th><th>Số tiền</th><th>Kênh</th><th>Trạng thái</th><th>Thời gian</th></tr></thead>
+    <table style="margin-top:10px"><thead><tr><th>Mã đơn</th><th>Email</th><th>Gói</th><th>Số tiền</th><th>Kênh</th><th>Trạng thái</th><th>Thời gian</th></tr></thead>
     <tbody id="rBody"></tbody></table>
   </div>
 
@@ -93,13 +93,20 @@ td .inp{min-width:70px;}
 
   <!-- Cài đặt -->
   <div id="tab-set" class="card hidden">
-    <h3>Giá gói PRO (VND / năm)</h3>
-    <div class="row">
-      <input class="inp" id="sPrice" type="number" style="max-width:200px">
-      <button class="btn" onclick="savePrice()">Lưu giá</button>
+    <h3>Bảng giá các gói (VND)</h3>
+    <table style="max-width:560px">
+      <thead><tr><th>Gói</th><th>Giá niêm yết (gạch ngang)</th><th>Giá bán</th></tr></thead>
+      <tbody>
+        <tr><td><b>Basic</b></td><td><input class="inp" id="list_basic" type="number"></td><td><input class="inp" id="price_basic" type="number"></td></tr>
+        <tr><td><b>Premium ⭐</b></td><td><input class="inp" id="list_premium" type="number"></td><td><input class="inp" id="price_premium" type="number"></td></tr>
+        <tr><td><b>Family 👑</b></td><td><input class="inp" id="list_family" type="number"></td><td><input class="inp" id="price_family" type="number"></td></tr>
+      </tbody>
+    </table>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" onclick="savePrice()">Lưu bảng giá</button>
       <span class="msg" id="sMsg" style="color:var(--mintD)"></span>
     </div>
-    <p style="font-size:13px;opacity:.7">Giá mới áp dụng ngay cho các lượt thanh toán tiếp theo và hiển thị trong modal Upgrade.</p>
+    <p style="font-size:13px;opacity:.7">Giá mới áp dụng ngay cho modal Upgrade và các đơn thanh toán tiếp theo. Quyền lợi: Basic = 21 unit đầu · Premium = 42 unit đầu · Family = toàn bộ + vĩnh viễn.</p>
   </div>
 </div>
 </div>
@@ -136,14 +143,18 @@ const vnd=n=>Number(n||0).toLocaleString("vi-VN")+"₫";
 /* ---- Khách hàng ---- */
 async function loadUsers(){
   const d=await api("/api/admin/users?q="+encodeURIComponent($("uSearch").value||""));
-  $("uBody").innerHTML=d.users.map(u=>
-    '<tr><td>'+u.id+'</td><td>'+esc(u.email)+'</td><td>'+esc(u.name)+'</td>'+
-    '<td><span class="pill '+(u.pro?"on":"off")+'">'+(u.pro?"PRO":"Free")+'</span></td>'+
-    '<td>'+esc(u.created_at)+'</td>'+
-    '<td><button class="btn sm '+(u.pro?"gray":"green")+'" onclick="togglePro('+u.id+','+(u.pro?0:1)+')">'+
-      (u.pro?"Hủy PRO":"Cấp PRO")+'</button></td></tr>').join("");
+  const planName={free:"Free",basic:"Basic",premium:"Premium ⭐",family:"Family 👑"};
+  $("uBody").innerHTML=d.users.map(u=>{
+    const plan=u.plan||"free";
+    const sel='<select class="inp" style="min-width:130px" id="pl'+u.id+'">'+
+      ["free","basic","premium","family"].map(p=>
+        '<option value="'+p+'"'+(p===plan?" selected":"")+'>'+planName[p]+'</option>').join("")+'</select>';
+    return '<tr><td>'+u.id+'</td><td>'+esc(u.email)+'</td><td>'+esc(u.name)+'</td>'+
+    '<td>'+sel+'</td><td>'+esc(u.created_at)+'</td>'+
+    '<td><button class="btn sm green" onclick="setPlan('+u.id+')">Lưu gói</button></td></tr>';
+  }).join("");
 }
-async function togglePro(id,v){ await api("/api/admin/users/"+id+"/pro","POST",{pro:v}); loadUsers(); }
+async function setPlan(id){ await api("/api/admin/users/"+id+"/plan","POST",{plan:$("pl"+id).value}); loadUsers(); }
 
 /* ---- Doanh thu ---- */
 async function loadRev(){
@@ -151,7 +162,7 @@ async function loadRev(){
   $("rToday").textContent=vnd(d.totals.today); $("rMonth").textContent=vnd(d.totals.month);
   $("rAll").textContent=vnd(d.totals.all); $("rCount").textContent=d.totals.count;
   $("rBody").innerHTML=d.rows.map(r=>
-    '<tr><td>'+r.order_code+'</td><td>'+esc(r.email)+'</td><td>'+vnd(r.amount)+'</td><td>'+esc(r.channel)+'</td>'+
+    '<tr><td>'+r.order_code+'</td><td>'+esc(r.email)+'</td><td>'+esc(r.plan||"")+'</td><td>'+vnd(r.amount)+'</td><td>'+esc(r.channel)+'</td>'+
     '<td><span class="pill '+(r.status==="paid"?"on":"off")+'">'+esc(r.status)+'</span></td><td>'+esc(r.created_at)+'</td></tr>').join("");
 }
 
@@ -220,10 +231,20 @@ async function saveWord(id){ await api("/api/admin/word/"+id,"PATCH",{en:$("we"+
 async function delWord(id){ if(confirm("Xóa từ này?")){ await api("/api/admin/word/"+id,"DELETE"); loadWords(curUnit.id,curUnit.name); } }
 
 /* ---- Cài đặt ---- */
-async function loadSettings(){ const d=await api("/api/admin/settings"); $("sPrice").value=d.pro_price; }
+async function loadSettings(){
+  const d=await api("/api/admin/settings");
+  ["basic","premium","family"].forEach(p=>{
+    $("list_"+p).value=d[p].list; $("price_"+p).value=d[p].sale;
+  });
+}
 async function savePrice(){
-  try{ const d=await api("/api/admin/settings","POST",{pro_price:$("sPrice").value});
-    $("sMsg").textContent="Đã lưu: "+vnd(d.pro_price); setTimeout(()=>$("sMsg").textContent="",2500);
+  try{
+    const body={};
+    ["basic","premium","family"].forEach(p=>{
+      body["list_"+p]=$("list_"+p).value; body["price_"+p]=$("price_"+p).value;
+    });
+    await api("/api/admin/settings","POST",body);
+    $("sMsg").textContent="Đã lưu bảng giá ✓"; setTimeout(()=>$("sMsg").textContent="",2500);
   }catch(e){ $("sMsg").textContent=e.message; }
 }
 boot();
