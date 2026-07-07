@@ -149,8 +149,9 @@ async function loadUsers(){
     const sel='<select class="inp" style="min-width:130px" id="pl'+u.id+'">'+
       ["free","basic","premium","family"].map(p=>
         '<option value="'+p+'"'+(p===plan?" selected":"")+'>'+planName[p]+'</option>').join("")+'</select>';
+    const gradeNote=(plan==="basic" && u.basic_grade!==null && u.basic_grade!==undefined)? '<div style="font-size:11px;opacity:.6">Đã chọn Grade '+(u.basic_grade+1)+'</div>' : "";
     return '<tr><td>'+u.id+'</td><td>'+esc(u.email)+'</td><td>'+esc(u.name)+'</td>'+
-    '<td>'+sel+'</td><td>'+esc(u.created_at)+'</td>'+
+    '<td>'+sel+gradeNote+'</td><td>'+esc(u.created_at)+'</td>'+
     '<td><button class="btn sm green" onclick="setPlan('+u.id+')">Lưu gói</button></td></tr>';
   }).join("");
 }

@@ -69,6 +69,7 @@ try{ db.exec("ALTER TABLE users ADD COLUMN plan TEXT DEFAULT 'free'"); }catch(e)
 try{ db.exec("ALTER TABLE payments ADD COLUMN plan TEXT DEFAULT 'premium'"); }catch(e){}
 db.prepare("UPDATE users SET plan='premium' WHERE pro=1 AND (plan IS NULL OR plan='free')").run();
 try{ db.exec("ALTER TABLE users ADD COLUMN sid TEXT"); }catch(e){}
+try{ db.exec("ALTER TABLE users ADD COLUMN basic_grade INTEGER"); }catch(e){}
 
 const getSetting = k => { const r=db.prepare("SELECT value FROM settings WHERE key=?").get(k); return r?r.value:null; };
 const setSetting = (k,v) => db.prepare("INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(k,String(v));
@@ -106,7 +107,9 @@ app.get("/admin", (req,res)=>res.sendFile(path.join(__dirname,"public","admin.ht
 
 const safeUser = u => {
   const plan = u.plan && u.plan!=="free" ? u.plan : (u.pro ? "premium" : "free");
-  return { email:u.email, name:u.name||"", plan, pro:plan!=="free", admin:ADMIN_EMAILS.includes(u.email) };
+  return { email:u.email, name:u.name||"", plan, pro:plan!=="free",
+           basicGrade: (u.basic_grade===null || u.basic_grade===undefined) ? null : u.basic_grade,
+           admin:ADMIN_EMAILS.includes(u.email) };
 };
 function setToken(res,u){
   const sid = crypto.randomBytes(16).toString("hex");
@@ -192,6 +195,18 @@ app.post("/api/logout",(req,res)=>{
   res.json({ok:true});
 });
 
+app.post("/api/choose-grade", auth, (req,res)=>{
+  const su=safeUser(req.user);
+  if(su.plan!=="basic") return res.status(400).json({error:"Only for Basic plan"});
+  if(req.user.basic_grade!==null && req.user.basic_grade!==undefined)
+    return res.status(400).json({error:"You already chose your grade"});
+  const g=parseInt(req.body.grade,10);
+  const count=db.prepare("SELECT COUNT(*) c FROM grades").get().c;
+  if(!(g>=0 && g<count)) return res.status(400).json({error:"Invalid grade"});
+  db.prepare("UPDATE users SET basic_grade=? WHERE id=?").run(g, req.user.id);
+  res.json({ok:true, basicGrade:g});
+});
+
 app.get("/api/progress", auth, (req,res)=>res.json({items:db.prepare("SELECT k,stars FROM progress WHERE user_id=?").all(req.user.id)}));
 app.post("/api/progress", auth, (req,res)=>{
   const {k,stars}=req.body||{};
@@ -206,7 +221,7 @@ app.post("/api/pay/create", auth, (req,res)=>{
   const cur = safeUser(req.user).plan;
   if(cur==="family" || cur===plan) return res.json({already:true});
   if(!sepayOn){
-    db.prepare("UPDATE users SET pro=1, plan=? WHERE id=?").run(plan, req.user.id);
+    db.prepare("UPDATE users SET pro=1, plan=?, basic_grade=NULL WHERE id=?").run(plan, req.user.id);
     db.prepare("INSERT INTO payments(order_code,user_id,amount,status,channel,plan) VALUES(?,?,?,?,?,?)")
       .run(Number(String(Date.now()).slice(-9)), req.user.id, planPrice(plan), "paid", "direct", plan);
     return res.json({demo:true});
@@ -239,9 +254,9 @@ app.post("/api/pay/webhook/sepay",(req,res)=>{
       db.prepare("UPDATE payments SET status='paid' WHERE order_code=?").run(oc);
       const plan = PLANS.includes(pay.plan) ? pay.plan : "premium";
       if(plan==="family")
-        db.prepare("UPDATE users SET pro=1, plan='family', pro_until=NULL WHERE id=?").run(pay.user_id);
+        db.prepare("UPDATE users SET pro=1, plan='family', pro_until=NULL, basic_grade=NULL WHERE id=?").run(pay.user_id);
       else
-        db.prepare("UPDATE users SET pro=1, plan=?, pro_until=date('now','+1 year') WHERE id=?").run(plan, pay.user_id);
+        db.prepare("UPDATE users SET pro=1, plan=?, pro_until=date('now','+1 year'), basic_grade=NULL WHERE id=?").run(plan, pay.user_id);
     }
   }
   res.json({success:true});
@@ -253,12 +268,12 @@ app.get("/api/admin/me", adminOnly, (req,res)=>res.json(safeUser(req.user)));
 app.get("/api/admin/users", adminOnly, (req,res)=>{
   const q="%"+(req.query.q||"")+"%";
   res.json({users:db.prepare(
-    "SELECT id,email,name,pro,plan,created_at FROM users WHERE email LIKE ? OR name LIKE ? ORDER BY id DESC LIMIT 500"
+    "SELECT id,email,name,pro,plan,basic_grade,created_at FROM users WHERE email LIKE ? OR name LIKE ? ORDER BY id DESC LIMIT 500"
   ).all(q,q)});
 });
 app.post("/api/admin/users/:id/plan", adminOnly, (req,res)=>{
   const plan = ["free","basic","premium","family"].includes(req.body.plan) ? req.body.plan : "free";
-  db.prepare("UPDATE users SET plan=?, pro=? WHERE id=?").run(plan, plan==="free"?0:1, req.params.id);
+  db.prepare("UPDATE users SET plan=?, pro=?, basic_grade=NULL WHERE id=?").run(plan, plan==="free"?0:1, req.params.id);
   res.json({ok:true});
 });
 

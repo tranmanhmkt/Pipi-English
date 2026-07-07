@@ -487,6 +487,17 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
 .cmpTable th{font-size:11px; opacity:.65; padding:4px 2px;}
 .cmpTable td{padding:4px 2px; border-top:1.5px solid #FBEAF2; text-align:center;}
 .cmpTable td:first-child{text-align:left; opacity:.8;}
+.gradePickList{display:flex; flex-direction:column; gap:8px; width:100%;}
+.gradePickBtn{
+  display:flex; align-items:center; gap:12px;
+  border:3px solid var(--slot-border); border-radius:16px; padding:11px 16px;
+  background:#FFFBF4; cursor:pointer; font-family:'Baloo 2',sans-serif;
+  font-weight:800; font-size:17px; color:var(--ink); transition:transform .08s;
+}
+.gradePickBtn:hover{border-color:var(--accent);}
+.gradePickBtn:active{transform:translateY(2px);}
+.gpIcon{font-size:26px;}
+.gpSub{margin-left:auto; font-size:12px; font-weight:700; opacity:.55;}
 .notice{
   position:fixed; left:50%; bottom:26px; transform:translate(-50%,20px);
   background:#fff; color:var(--ink); font-weight:700; font-size:14px;
@@ -662,6 +673,17 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   </div>
 </div>
 
+<!-- ===== Modal chọn lớp cho gói Basic ===== -->
+<div class="modalWrap" id="gradeModal" style="display:none">
+  <div class="modal">
+    <button class="modalClose" onclick="hideModal('gradeModal')">✕</button>
+    <div style="font-size:52px; line-height:1;">🎁</div>
+    <div class="modalTitle">Choose your grade!</div>
+    <div class="hint" style="font-size:14px;">Your Basic plan unlocks <b>ONE grade</b> of your choice.<br>Choose carefully — this cannot be changed later!</div>
+    <div class="gradePickList" id="gradePickList"></div>
+  </div>
+</div>
+
 <!-- ===== Modal nâng cấp PRO ===== -->
 <div class="modalWrap" id="payModal" style="display:none">
   <div class="modal">
@@ -674,7 +696,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
           <div class="planName">Basic</div>
           <div class="planOld" id="old_basic">499.000₫</div>
           <div class="planNew" id="new_basic">149.000₫</div>
-          <div class="planSub">First 21 units<br>1 year</div>
+          <div class="planSub">Any 1 grade<br>you choose · 1 year</div>
         </button>
         <button class="planCard sel" data-plan="premium" onclick="pickPlan('premium')">
           <div class="planName">Premium ⭐</div>
@@ -692,7 +714,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
       <table class="cmpTable">
         <tr><th></th><th>Free</th><th>Basic</th><th>Prem ⭐</th><th>Family 👑</th></tr>
         <tr><td>1 trial unit</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
-        <tr><td>21 units</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>1 grade of your choice</td><td>❌</td><td>✅</td><td>✅</td><td>✅</td></tr>
         <tr><td>42 units</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td></tr>
         <tr><td>All 105 units</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr>
         <tr><td>Typing</td><td>Module 1</td><td>✅</td><td>✅</td><td>✅</td></tr>
@@ -1050,7 +1072,10 @@ function renderUnits(){
       </div>
       <div class="unitStars">${canPlayUnit(cur.g,ui,u)? stars+'⭐' : '🔒'}</div>`;
     b.onclick=()=>{
-      if(!canPlayUnit(cur.g, ui, u)){ showPay(true); return; }
+      if(!canPlayUnit(cur.g, ui, u)){
+        if(needGradeChoice()) showGradePick(); else showPay(true);
+        return;
+      }
       cur.u=ui; renderMap(); go("mapScreen");
     };
     list.appendChild(b);
@@ -1636,11 +1661,21 @@ document.addEventListener("pointerdown",()=>{
 let user=null, serverMode=false, appConfig={};
 /* Gói: Free = 3 unit đầu mỗi lớp (unit không gắn PRO) · Basic = 21 unit đầu ·
    Premium = 42 unit đầu · Family = toàn bộ + vĩnh viễn */
-const PLAN_QUOTA={ free:0, basic:21, premium:42, family:Infinity };
+/* Quyền theo gói: Basic = 1 lớp TỰ CHỌN · Premium = 42 unit đầu · Family = tất cả */
 function userPlan(){ return serverMode ? (user ? (user.plan||"free") : "free") : "family"; }
-function unitQuota(){ return PLAN_QUOTA[userPlan()] ?? 0; }
 function unitGlobalIndex(gi,ui){ let n=0; for(let i=0;i<gi;i++) n+=CURRICULUM[i].units.length; return n+ui; }
-function canPlayUnit(gi,ui,u){ return !u.pro || unitGlobalIndex(gi,ui) < unitQuota(); }
+function canPlayUnit(gi,ui,u){
+  if(!u.pro) return true;
+  const plan=userPlan();
+  if(plan==="family") return true;
+  if(plan==="premium") return unitGlobalIndex(gi,ui) < 42;
+  if(plan==="basic") return user && user.basicGrade!==null && user.basicGrade!==undefined && gi===user.basicGrade;
+  return false;
+}
+function needGradeChoice(){
+  return serverMode && user && user.plan==="basic" &&
+         (user.basicGrade===null || user.basicGrade===undefined);
+}
 function isPro(){ return userPlan()!=="free"; }
 async function api(url,body){
   const r=await fetch(url,{
@@ -1686,6 +1721,7 @@ async function initAuth(){
   try{ user=await api("/api/me"); }catch(e){ user=null; }
   renderUser();
   if(user) loadCloudProgress();
+  if(needGradeChoice()) setTimeout(showGradePick, 700);
   if(appConfig.googleClientId) initGoogle();
   if(new URLSearchParams(location.search).get("paid")==="1"){
     history.replaceState({},"","/");
@@ -1754,6 +1790,29 @@ function playUpsellVoice(){
     speechSynthesis.speak(u);
   }catch(e){}
 }
+function showGradePick(){
+  const list=$("gradePickList"); list.innerHTML="";
+  CURRICULUM.forEach((g,gi)=>{
+    const b=document.createElement("button");
+    b.className="gradePickBtn";
+    b.innerHTML='<span class="gpIcon">'+g.icon+'</span><span>'+g.grade+'</span>'+
+                '<span class="gpSub">'+g.units.length+' units</span>';
+    b.onclick=()=>pickBasicGrade(gi, g.grade);
+    list.appendChild(b);
+  });
+  $("gradeModal").style.display="flex";
+}
+async function pickBasicGrade(gi, name){
+  if(!confirm('Unlock "'+name+'" with your Basic plan?\nThis choice CANNOT be changed later!')) return;
+  try{
+    await api("/api/choose-grade",{grade:gi});
+    user=await api("/api/me");
+    hideModal("gradeModal");
+    renderUser(); renderHome();
+    celebrate();
+    showNotice("🎉 "+name+" unlocked! Have fun learning!");
+  }catch(e){ showNotice(e.message); }
+}
 function showPay(fromLock){
   if(serverMode && !user){ showAuth(); return; }
   fillPrices();
@@ -1816,6 +1875,7 @@ async function startPay(){
     if(d.demo || d.already){
       user=await api("/api/me");
       hideModal("payModal"); renderUser(); celebrate();
+      if(needGradeChoice()) setTimeout(showGradePick, 1000);
     } else if(d.qrUrl){
       $("payMain").style.display="none";
       $("payQR").style.display="block";
@@ -1829,7 +1889,10 @@ async function startPay(){
             clearInterval(payTimer);
             $("qrStatus").textContent="✅ Payment received!";
             user=await api("/api/me"); renderUser();
-            setTimeout(()=>{ hideModal("payModal"); celebrate(); }, 800);
+            setTimeout(()=>{
+              hideModal("payModal"); celebrate();
+              if(needGradeChoice()) setTimeout(showGradePick, 1000);
+            }, 800);
           }
         }catch(e){}
       }, 3000);
@@ -1871,7 +1934,10 @@ document.addEventListener("visibilitychange", async()=>{
   try{
     const before=user.plan;
     const u=await api("/api/me"); user=u; renderUser();
-    if(before!==u.plan && u.plan!=="free"){ hideModal("payModal"); celebrate(); }
+    if(before!==u.plan && u.plan!=="free"){
+      hideModal("payModal"); celebrate();
+      if(needGradeChoice()) setTimeout(showGradePick, 1000);
+    }
   }catch(e){}
 });
 

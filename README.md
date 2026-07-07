@@ -143,3 +143,10 @@ Cài đặt:
 
 - Webhook SePay nhận diện nội dung chuyển khoản linh hoạt hơn (chấp nhận "PIPI 123..." có khoảng trắng, thiếu trường transferType).
 - Khách chuyển khoản xong quay lại tab web (kể cả đã lỡ tắt bảng QR) → hệ thống tự kiểm tra và **kích hoạt PRO ngay + pháo hoa chúc mừng**, không cần tải lại trang.
+
+## 12. (MỚI) Gói Basic — khách tự chọn 1 Grade bất kỳ
+
+- Sau khi thanh toán Basic (hoặc được admin cấp Basic), khách được mở bảng **"Choose your grade!"** để chọn 1 trong các lớp — lớp nào cũng được, không bắt buộc Grade 1.
+- Lựa chọn là **một lần duy nhất** (có cảnh báo xác nhận trước khi chốt).
+- Admin xem được khách Basic đã chọn lớp nào ngay trong tab Khách hàng.
+- Muốn cho khách chọn lại: vào Admin → chọn lại gói **Basic** cho tài khoản đó (mọi lần đổi gói đều reset lựa chọn lớp).
