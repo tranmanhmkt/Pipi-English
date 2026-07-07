@@ -150,3 +150,16 @@ Cài đặt:
 - Lựa chọn là **một lần duy nhất** (có cảnh báo xác nhận trước khi chốt).
 - Admin xem được khách Basic đã chọn lớp nào ngay trong tab Khách hàng.
 - Muốn cho khách chọn lại: vào Admin → chọn lại gói **Basic** cho tài khoản đó (mọi lần đổi gói đều reset lựa chọn lớp).
+
+## 13. (MỚI) Supabase — lưu dữ liệu VĨNH VIỄN (khuyên dùng trước khi bán)
+
+Có `DATABASE_URL` → hệ thống tự dùng Supabase Postgres (tài khoản, đơn hàng, nội dung, tiến độ **không bao giờ mất**, kể cả deploy lại). Không có → tự chạy SQLite như cũ để test máy.
+
+1. Vào https://supabase.com → **New project** (gói Free đủ dùng) → đặt tên `pipi-english`, tạo **Database Password** (LƯU LẠI mật khẩu này).
+2. Vào **Project Settings → Database → Connection string → URI**, chọn chế độ **Session pooler**, copy chuỗi dạng:
+   `postgresql://postgres.xxxx:MAT_KHAU@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres`
+   (thay `MAT_KHAU` bằng mật khẩu ở bước 1).
+3. Trên Render → **Environment** → thêm biến `DATABASE_URL` = chuỗi trên → Save.
+4. Deploy lại → log hiện `Lưu trữ: SUPABASE POSTGRES ☁️ (vĩnh viễn)` và `🌱 Đã nạp nội dung mẫu vào Supabase` là xong. Bảng tự tạo, nội dung 105 unit tự nạp lần đầu.
+
+⚠️ Dữ liệu SQLite cũ (nếu có tài khoản test) sẽ không tự chuyển sang — Supabase bắt đầu sạch. Nên bật Supabase NGAY TRƯỚC khi có khách thật.
