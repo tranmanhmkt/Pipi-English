@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#FFD9EA">
-<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="mobile-web-app-capable" content="yes">
@@ -85,7 +85,7 @@ body{
 }
 .logoWrap{width:min(440px,90vw); margin-top:2px;}
 .logoWrap svg{width:100%; height:auto; overflow:visible; filter:drop-shadow(0 6px 8px rgba(107,74,102,.14));}
-.logoWrap .chickG{transform-origin:90px 100px; animation:chickBob 2.4s ease-in-out infinite;}
+.logoWrap .chickG{transform-origin:90px 92px; animation:chickBob 2.4s ease-in-out infinite;}
 @keyframes chickBob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-8px) rotate(2deg);}}
 .logo{font-size:clamp(36px,7vw,52px); font-weight:800; text-align:center;}
 .logo span{color:var(--accent-dark);}
@@ -503,7 +503,7 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
 <!-- ===== TRANG CHỦ ===== -->
 <div class="screen active" id="homeScreen">
   <div class="userRow" id="userRow"></div>
-  <div class="logoWrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 190" font-family="'Baloo 2','Comic Sans MS',cursive">
+  <div class="logoWrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 195" font-family="'Baloo 2','Comic Sans MS',cursive">
   <defs>
     <linearGradient id="gradY" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFE894"/><stop offset="1" stop-color="#FFC93C"/>
@@ -516,53 +516,52 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
     </linearGradient>
   </defs>
 
-  <!-- Bóng đổ -->
-  <ellipse cx="90" cy="177" rx="46" ry="7" fill="#E8A8C4" opacity="0.3"/>
+  <ellipse cx="90" cy="183" rx="46" ry="6.5" fill="#E8A8C4" opacity="0.3"/>
 
   <g class="chickG">
     <!-- Cánh nhỏ hai bên -->
-    <ellipse cx="35" cy="106" rx="11" ry="17" fill="#FFD34D" transform="rotate(-18 35 106)"/>
-    <ellipse cx="145" cy="106" rx="11" ry="17" fill="#FFD34D" transform="rotate(18 145 106)"/>
-    <!-- Đầu / thân tròn -->
-    <circle cx="90" cy="86" r="48" fill="url(#gradY)"/>
+    <ellipse cx="34" cy="112" rx="11" ry="17" fill="#FFD34D" transform="rotate(-18 34 112)"/>
+    <ellipse cx="146" cy="112" rx="11" ry="17" fill="#FFD34D" transform="rotate(18 146 112)"/>
+    <!-- Đầu tròn — nâng cao, mặt lộ hẳn trên vỏ trứng -->
+    <circle cx="90" cy="74" r="46" fill="url(#gradY)"/>
     <!-- Mũ kỷ yếu to bản đội lệch -->
-    <g transform="rotate(-12 90 40)">
-      <path d="M62 54 Q90 68 118 54 L118 36 Q90 50 62 36 Z" fill="#6A4FC0"/>
-      <path d="M90 6 L152 28 L90 52 L28 28 Z" fill="url(#gradCap)" stroke="#5B41B0" stroke-width="2.5" stroke-linejoin="round"/>
-      <circle cx="90" cy="27" r="4.2" fill="#FFC93C"/>
-      <path d="M90 27 Q124 23 148 29" stroke="#FFC93C" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-      <line x1="148" y1="29" x2="148" y2="56" stroke="#FFC93C" stroke-width="4" stroke-linecap="round"/>
-      <circle cx="148" cy="61" r="5.5" fill="#FFC93C"/>
+    <g transform="rotate(-12 90 34)">
+      <path d="M64 46 Q90 60 116 46 L116 30 Q90 44 64 30 Z" fill="#6A4FC0"/>
+      <path d="M90 0 L150 22 L90 44 L30 22 Z" fill="url(#gradCap)" stroke="#5B41B0" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="90" cy="21" r="4.2" fill="#FFC93C"/>
+      <path d="M90 21 Q122 18 146 23" stroke="#FFC93C" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <line x1="146" y1="23" x2="146" y2="50" stroke="#FFC93C" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="146" cy="55" r="5.5" fill="#FFC93C"/>
     </g>
-    <!-- Ánh sao lấp lánh cạnh mũ -->
-    <path d="M26 26 L28.4 33.6 L36 36 L28.4 38.4 L26 46 L23.6 38.4 L16 36 L23.6 33.6 Z" fill="#FFC93C"/>
-    <path d="M42 12 L43.4 16.6 L48 18 L43.4 19.4 L42 24 L40.6 19.4 L36 18 L40.6 16.6 Z" fill="#FFDD75"/>
-    <!-- Mắt to long lanh -->
-    <circle cx="74" cy="90" r="9.5" fill="#4A3B4E"/>
-    <circle cx="77.2" cy="86.5" r="3.1" fill="#fff"/>
-    <circle cx="71.5" cy="93.5" r="1.6" fill="#fff"/>
-    <circle cx="106" cy="90" r="9.5" fill="#4A3B4E"/>
-    <circle cx="109.2" cy="86.5" r="3.1" fill="#fff"/>
-    <circle cx="103.5" cy="93.5" r="1.6" fill="#fff"/>
-    <!-- Mỏ bé xíu -->
-    <path d="M83 101 Q90 96 97 101 Q90 110 83 101 Z" fill="#FF9D4D"/>
+    <!-- Ánh sao lấp lánh -->
+    <path d="M24 22 L26.4 29.6 L34 32 L26.4 34.4 L24 42 L21.6 34.4 L14 32 L21.6 29.6 Z" fill="#FFC93C"/>
+    <path d="M40 8 L41.4 12.6 L46 14 L41.4 15.4 L40 20 L38.6 15.4 L34 14 L38.6 12.6 Z" fill="#FFDD75"/>
+    <!-- Mắt to long lanh (lộ hẳn trên vỏ) -->
+    <circle cx="74" cy="78" r="9.5" fill="#4A3B4E"/>
+    <circle cx="77.2" cy="74.5" r="3.1" fill="#fff"/>
+    <circle cx="71.5" cy="81.5" r="1.6" fill="#fff"/>
+    <circle cx="106" cy="78" r="9.5" fill="#4A3B4E"/>
+    <circle cx="109.2" cy="74.5" r="3.1" fill="#fff"/>
+    <circle cx="103.5" cy="81.5" r="1.6" fill="#fff"/>
+    <!-- Mỏ -->
+    <path d="M83 89 Q90 84 97 89 Q90 98 83 89 Z" fill="#FF9D4D"/>
     <!-- Má hồng -->
-    <circle cx="56" cy="101" r="8" fill="#FFB3C9" opacity="0.9"/>
-    <circle cx="124" cy="101" r="8" fill="#FFB3C9" opacity="0.9"/>
+    <circle cx="56" cy="89" r="8" fill="#FFB3C9" opacity="0.9"/>
+    <circle cx="124" cy="89" r="8" fill="#FFB3C9" opacity="0.9"/>
   </g>
 
-  <!-- Vỏ trứng răng cưa to -->
-  <path d="M38 114 L55 93 L72 114 L90 91 L108 114 L125 93 L142 114
-           C142 152 124 173 90 173 C56 173 38 152 38 114 Z"
+  <!-- Vỏ trứng — hạ thấp, chỉ ôm phần bụng -->
+  <path d="M40 124 L57 104 L74 124 L90 102 L106 124 L123 104 L140 124
+           C140 158 122 178 90 178 C58 178 40 158 40 124 Z"
         fill="#FFF9F0" stroke="#F0DCBE" stroke-width="3" stroke-linejoin="round"/>
 
-  <!-- Tên web ngay sau logo (kiểu tiêu đề) -->
-  <g transform="rotate(-3 255 90)">
-    <rect x="196" y="64" width="118" height="60" rx="18" fill="#D14E81"/>
-    <rect x="196" y="58" width="118" height="60" rx="18" fill="url(#gradP)"/>
-    <text x="255" y="101" text-anchor="middle" font-size="41" font-weight="800" fill="#fff">PiPi</text>
+  <!-- Tên web ngay sau icon -->
+  <g transform="rotate(-3 255 92)">
+    <rect x="196" y="66" width="118" height="60" rx="18" fill="#D14E81"/>
+    <rect x="196" y="60" width="118" height="60" rx="18" fill="url(#gradP)"/>
+    <text x="255" y="103" text-anchor="middle" font-size="41" font-weight="800" fill="#fff">PiPi</text>
   </g>
-  <text x="330" y="104" font-size="44" font-weight="800" fill="#6B4A66">English</text>
+  <text x="330" y="106" font-size="44" font-weight="800" fill="#6B4A66">English</text>
 </svg></div>
   <div class="tagline">Learn English with PiPi! · Grade 1 → Grade 5</div>
   <div class="gradeGrid" id="gradeGrid"></div>
