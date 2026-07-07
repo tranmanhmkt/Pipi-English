@@ -77,6 +77,16 @@ const PRICE_DEFAULTS = {
   price_family:"499000", list_family:"1999000",
 };
 for(const k in PRICE_DEFAULTS) if(!getSetting(k)) setSetting(k, PRICE_DEFAULTS[k]);
+/* Chính sách Free mới: chỉ Unit 1 của Grade 1 miễn phí (chạy đúng 1 lần trên DB cũ) */
+if(!getSetting("mig_free_only_first")){
+  const firstUnit=db.prepare(`SELECT u.id FROM units u JOIN grades g ON g.id=u.grade_id
+    ORDER BY g.sort,g.id,u.sort,u.id LIMIT 1`).get();
+  if(firstUnit){
+    db.prepare("UPDATE units SET pro=1 WHERE id<>?").run(firstUnit.id);
+    db.prepare("UPDATE units SET pro=0 WHERE id=?").run(firstUnit.id);
+  }
+  setSetting("mig_free_only_first","1");
+}
 const PLANS = ["basic","premium","family"];
 const planPrice = p => parseInt(getSetting("price_"+p),10) || 0;
 const prices = () => ({
