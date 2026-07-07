@@ -132,3 +132,14 @@ Cài đặt:
 - Toàn bộ giao diện học tập là English; giọng đọc **luôn ép chọn giọng en-US** của thiết bị (không phụ thuộc ngôn ngữ hệ điều hành/trình duyệt của khách).
 - Muốn đồng nhất 100% giọng đọc trên MỌI thiết bị: vào Admin → Nội dung → điền link **file mp3** cho từng từ (thu âm hoặc tạo bằng Google TTS) — có file thì mọi máy phát cùng một âm thanh.
 - Hoàn thành bài nào cũng có tiếng reo **"Yeeeee!"** + nhạc chiến thắng + vỗ tay.
+
+## 10. (MỚI) Một tài khoản — một thiết bị
+
+- Mỗi lần đăng nhập, hệ thống cấp một **mã phiên duy nhất**. Đăng nhập ở máy thứ 2 → mã phiên mới thay mã cũ → **máy cũ tự động bị thoát** (phát hiện trong tối đa 60 giây hoặc ngay ở thao tác kế tiếp) kèm thông báo "Your account was signed in on another device".
+- Máy mới thấy thông báo "✓ Signed out from your other device" xác nhận đã thoát máy cũ.
+- Chặn triệt để tình trạng 1 tài khoản PRO chia sẻ cho nhiều nhà dùng chung.
+
+## 11. (MỚI) Bảo đảm tự động lên PRO sau thanh toán
+
+- Webhook SePay nhận diện nội dung chuyển khoản linh hoạt hơn (chấp nhận "PIPI 123..." có khoảng trắng, thiếu trường transferType).
+- Khách chuyển khoản xong quay lại tab web (kể cả đã lỡ tắt bảng QR) → hệ thống tự kiểm tra và **kích hoạt PRO ngay + pháo hoa chúc mừng**, không cần tải lại trang.

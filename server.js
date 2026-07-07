@@ -9,6 +9,7 @@ const Database = require("better-sqlite3");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const crypto = require("crypto");
 const { OAuth2Client } = require("google-auth-library");
 
 const PORT = process.env.PORT || 3000;
@@ -67,6 +68,7 @@ if (db.prepare("SELECT COUNT(*) c FROM grades").get().c === 0) {
 try{ db.exec("ALTER TABLE users ADD COLUMN plan TEXT DEFAULT 'free'"); }catch(e){}
 try{ db.exec("ALTER TABLE payments ADD COLUMN plan TEXT DEFAULT 'premium'"); }catch(e){}
 db.prepare("UPDATE users SET plan='premium' WHERE pro=1 AND (plan IS NULL OR plan='free')").run();
+try{ db.exec("ALTER TABLE users ADD COLUMN sid TEXT"); }catch(e){}
 
 const getSetting = k => { const r=db.prepare("SELECT value FROM settings WHERE key=?").get(k); return r?r.value:null; };
 const setSetting = (k,v) => db.prepare("INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(k,String(v));
@@ -107,14 +109,19 @@ const safeUser = u => {
   return { email:u.email, name:u.name||"", plan, pro:plan!=="free", admin:ADMIN_EMAILS.includes(u.email) };
 };
 function setToken(res,u){
-  res.cookie("pipi_token", jwt.sign({uid:u.id}, JWT_SECRET, {expiresIn:"30d"}),
+  const sid = crypto.randomBytes(16).toString("hex");
+  db.prepare("UPDATE users SET sid=? WHERE id=?").run(sid, u.id);
+  res.cookie("pipi_token", jwt.sign({uid:u.id, sid}, JWT_SECRET, {expiresIn:"30d"}),
     {httpOnly:true, sameSite:"lax", secure:IS_PROD, maxAge:30*24*3600*1000});
 }
 function auth(req,res,next){
   try{
-    const {uid}=jwt.verify(req.cookies.pipi_token, JWT_SECRET);
-    req.user=db.prepare("SELECT * FROM users WHERE id=?").get(uid);
-    if(!req.user) throw 0; next();
+    const payload = jwt.verify(req.cookies.pipi_token, JWT_SECRET);
+    req.user = db.prepare("SELECT * FROM users WHERE id=?").get(payload.uid);
+    if(!req.user) throw 0;
+    if(req.user.sid && payload.sid !== req.user.sid)
+      return res.status(401).json({error:"Signed in on another device", code:"SESSION_REPLACED"});
+    next();
   }catch(e){ res.status(401).json({error:"Please sign in"}); }
 }
 function adminOnly(req,res,next){
@@ -147,13 +154,17 @@ app.post("/api/register",(req,res)=>{
   const info=db.prepare("INSERT INTO users(email,pass_hash,name) VALUES(?,?,?)")
     .run(email.toLowerCase(), bcrypt.hashSync(password,10), (name||"").slice(0,50));
   const u=db.prepare("SELECT * FROM users WHERE id=?").get(info.lastInsertRowid);
-  setToken(res,u); res.json(safeUser(u));
+  const kicked = !!u.sid;
+  setToken(res,u);
+  res.json({ ...safeUser(u), kicked });
 });
 app.post("/api/login",(req,res)=>{
   const u=db.prepare("SELECT * FROM users WHERE email=?").get((req.body.email||"").toLowerCase());
   if(!u||!u.pass_hash||!bcrypt.compareSync(req.body.password||"",u.pass_hash))
     return res.status(400).json({error:"Wrong email or password"});
-  setToken(res,u); res.json(safeUser(u));
+  const kicked = !!u.sid;
+  setToken(res,u);
+  res.json({ ...safeUser(u), kicked });
 });
 const gClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 app.post("/api/google", async (req,res)=>{
@@ -166,11 +177,20 @@ app.post("/api/google", async (req,res)=>{
       const info=db.prepare("INSERT INTO users(email,name,google_id) VALUES(?,?,?)").run(p.email.toLowerCase(), p.name||"", p.sub);
       u=db.prepare("SELECT * FROM users WHERE id=?").get(info.lastInsertRowid);
     } else if(!u.google_id) db.prepare("UPDATE users SET google_id=? WHERE id=?").run(p.sub,u.id);
-    setToken(res,u); res.json(safeUser(u));
+    const kicked = !!u.sid;
+  setToken(res,u);
+  res.json({ ...safeUser(u), kicked });
   }catch(e){ res.status(400).json({error:"Google sign-in failed"}); }
 });
 app.get("/api/me", auth, (req,res)=>res.json(safeUser(req.user)));
-app.post("/api/logout",(req,res)=>{res.clearCookie("pipi_token");res.json({ok:true});});
+app.post("/api/logout",(req,res)=>{
+  try{
+    const {uid}=jwt.verify(req.cookies.pipi_token, JWT_SECRET);
+    db.prepare("UPDATE users SET sid=NULL WHERE id=?").run(uid);
+  }catch(e){}
+  res.clearCookie("pipi_token");
+  res.json({ok:true});
+});
 
 app.get("/api/progress", auth, (req,res)=>res.json({items:db.prepare("SELECT k,stars FROM progress WHERE user_id=?").all(req.user.id)}));
 app.post("/api/progress", auth, (req,res)=>{
@@ -211,8 +231,8 @@ app.post("/api/pay/webhook/sepay",(req,res)=>{
   const b=req.body||{};
   const content=(b.content||b.description||"")+"";
   const amountIn=Number(b.transferAmount||b.amount||0);
-  const m=content.match(/PIPI(\d{6,12})/i);
-  if(b.transferType==="in" && m){
+  const m=content.match(/PIPI\s*(\d{6,12})/i);
+  if(m && (b.transferType===undefined || b.transferType==="in")){
     const oc=Number(m[1]);
     const pay=db.prepare("SELECT * FROM payments WHERE order_code=?").get(oc);
     if(pay && pay.status!=="paid" && amountIn>=pay.amount){

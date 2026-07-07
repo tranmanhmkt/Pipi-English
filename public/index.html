@@ -487,6 +487,14 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
 .cmpTable th{font-size:11px; opacity:.65; padding:4px 2px;}
 .cmpTable td{padding:4px 2px; border-top:1.5px solid #FBEAF2; text-align:center;}
 .cmpTable td:first-child{text-align:left; opacity:.8;}
+.notice{
+  position:fixed; left:50%; bottom:26px; transform:translate(-50%,20px);
+  background:#fff; color:var(--ink); font-weight:700; font-size:14px;
+  padding:12px 22px; border-radius:999px;
+  box-shadow:0 6px 22px rgba(107,74,102,.32);
+  opacity:0; transition:.35s ease; z-index:200; max-width:92vw; text-align:center;
+}
+.notice.show{opacity:1; transform:translate(-50%,0);}
 .confetti{position:fixed; top:-12px; font-size:22px; animation:fall linear forwards; pointer-events:none; z-index:50;}
 @keyframes fall{to{transform:translateY(105vh) rotate(540deg); opacity:.9;}}
 
@@ -1642,8 +1650,28 @@ async function api(url,body){
     body: body!==undefined ? JSON.stringify(body):undefined
   });
   const d=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(d.error||"Something went wrong");
+  if(!r.ok){
+    if(d.code==="SESSION_REPLACED") handleKicked();
+    const e=new Error(d.error||"Something went wrong"); e.code=d.code;
+    throw e;
+  }
   return d;
+}
+/* Thông báo nổi nhỏ góc dưới */
+function showNotice(msg){
+  const n=document.createElement("div");
+  n.className="notice"; n.textContent=msg;
+  document.body.appendChild(n);
+  setTimeout(()=>n.classList.add("show"),20);
+  setTimeout(()=>{ n.classList.remove("show"); setTimeout(()=>n.remove(),400); }, 4200);
+}
+/* Tài khoản bị đăng nhập ở máy khác → thoát khỏi máy này + báo */
+let kickedShown=false;
+function handleKicked(){
+  if(kickedShown && !user) return;
+  kickedShown=true;
+  user=null; renderUser();
+  showNotice("🐥 Your account was signed in on another device");
 }
 async function initAuth(){
   try{ appConfig=await api("/api/config"); serverMode=true; }
@@ -1753,6 +1781,8 @@ async function submitAuth(){
   $("authErr").textContent="";
   try{
     user=await api(authTab==="login"?"/api/login":"/api/register",{email,password,name});
+    kickedShown=false;
+    if(user.kicked) showNotice("✓ Signed out from your other device");
     hideModal("authModal"); renderUser(); loadCloudProgress();
   }catch(e){ $("authErr").textContent=e.message; }
 }
@@ -1769,6 +1799,8 @@ function initGoogle(){
       callback:async res=>{
         try{
           user=await api("/api/google",{credential:res.credential});
+          kickedShown=false;
+          if(user.kicked) showNotice("✓ Signed out from your other device");
           hideModal("authModal"); renderUser(); loadCloudProgress();
         }catch(e){ $("authErr").textContent=e.message; }
       }
@@ -1826,6 +1858,22 @@ async function loadCloudProgress(){
 }
 rebuildAudioMap();
 initAuth();
+/* Kiểm tra phiên định kỳ: máy cũ phát hiện bị đá trong tối đa 60 giây */
+setInterval(async()=>{
+  if(serverMode && user){
+    try{ const u=await api("/api/me"); user=u; renderUser(); }catch(e){}
+  }
+}, 60000);
+/* Quay lại tab (vd sau khi chuyển khoản bên app ngân hàng) → cập nhật gói ngay,
+   lên PRO là tung hoa chúc mừng dù đã tắt modal QR */
+document.addEventListener("visibilitychange", async()=>{
+  if(document.visibilityState!=="visible" || !serverMode || !user) return;
+  try{
+    const before=user.plan;
+    const u=await api("/api/me"); user=u; renderUser();
+    if(before!==u.plan && u.plan!=="free"){ hideModal("payModal"); celebrate(); }
+  }catch(e){}
+});
 
 renderHome();
 /* Cập nhật lại số liệu khi quay về màn hình */
