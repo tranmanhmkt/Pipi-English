@@ -882,7 +882,7 @@ function pickBestVoice(){
 }
 if(typeof speechSynthesis!=="undefined"){
   pickBestVoice();
-  speechSynthesis.onvoiceschanged=pickBestVoice;
+  speechSynthesis.onvoiceschanged=()=>{ pickBestVoice(); pickViVoice(); };
 }
 /* Có file audio riêng của từ (gán trong Admin) → phát file, mọi thiết bị nghe giống nhau.
    Không có → dùng giọng en-US đã chọn (pickBestVoice). */
@@ -1042,7 +1042,7 @@ function renderUnits(){
       </div>
       <div class="unitStars">${canPlayUnit(cur.g,ui,u)? stars+'⭐' : '🔒'}</div>`;
     b.onclick=()=>{
-      if(!canPlayUnit(cur.g, ui, u)){ showPay(); return; }
+      if(!canPlayUnit(cur.g, ui, u)){ showPay(true); return; }
       cur.u=ui; renderMap(); go("mapScreen");
     };
     list.appendChild(b);
@@ -1428,7 +1428,7 @@ function renderTyping(){
       '<div class="unitWords">'+mod.words.length+' words · #'+mod.from+'–'+mod.to+'</div></div>'+
       '<div class="unitStars">'+((!mod.free && !isPro())? "🔒" : (st? "⭐".repeat(st) : ""))+'</div>';
     b.onclick=()=>{
-      if(!mod.free && !isPro()){ showPay(); return; }
+      if(!mod.free && !isPro()){ showPay(true); return; }
       startTyping(mod.i);
     };
     list.appendChild(b);
@@ -1703,11 +1703,35 @@ function fillPrices(){
   });
   updatePayBtn();
 }
-function showPay(){
+/* ===== Giọng em bé nhắc ba mẹ nâng cấp =====
+   Muốn dùng giọng bé THẬT (hay hơn nhiều): thu âm câu nói, upload file mp3
+   rồi dán link vào UPSELL_AUDIO bên dưới — hệ thống sẽ ưu tiên phát file. */
+const UPSELL_AUDIO = "upsell.mp3";
+let viVoice=null;
+function pickViVoice(){
+  try{
+    const vs=speechSynthesis.getVoices();
+    viVoice = vs.find(v=>/vi[-_]VN/i.test(v.lang)) || vs.find(v=>/^vi/i.test(v.lang)) || null;
+  }catch(e){}
+}
+pickViVoice();
+function playUpsellVoice(){
+  try{
+    if(UPSELL_AUDIO){ new Audio(UPSELL_AUDIO).play().catch(()=>{}); return; }
+    if(!viVoice) return; // thiết bị không có giọng tiếng Việt thì im lặng, không đọc sai
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance("Ba mẹ hãy nâng cấp cho con để con học tiếp nhé!");
+    u.lang="vi-VN"; u.pitch=1.6; u.rate=1.02; u.volume=1;
+    u.voice=viVoice;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function showPay(fromLock){
   if(serverMode && !user){ showAuth(); return; }
   fillPrices();
   $("payHint").textContent="Secure payment";
   $("payModal").style.display="flex";
+  if(fromLock) playUpsellVoice();
 }
 function hideModal(id){
   $(id).style.display="none";
