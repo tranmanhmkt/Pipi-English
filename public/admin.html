@@ -78,6 +78,27 @@ td .inp{min-width:70px;}
       <div class="stat"><b id="rAll">0₫</b>Tổng cộng</div>
       <div class="stat"><b id="rCount">0</b>Đơn thành công</div>
     </div>
+    <div class="row" style="margin:2px 0 8px; gap:8px;">
+      <select class="inp" id="fPlan" style="max-width:140px" onchange="applyRevFilter()">
+        <option value="">Gói: tất cả</option>
+        <option value="basic">Basic</option>
+        <option value="premium">Premium</option>
+        <option value="family">Family</option>
+      </select>
+      <select class="inp" id="fStatus" style="max-width:170px" onchange="applyRevFilter()">
+        <option value="">Trạng thái: tất cả</option>
+        <option value="paid">paid (đã thanh toán)</option>
+        <option value="pending">pending (chờ)</option>
+      </select>
+      <label style="font-size:12px;font-weight:700;opacity:.6">Từ</label>
+      <input class="inp" id="fFrom" type="date" style="max-width:150px" onchange="applyRevFilter()">
+      <label style="font-size:12px;font-weight:700;opacity:.6">đến</label>
+      <input class="inp" id="fTo" type="date" style="max-width:150px" onchange="applyRevFilter()">
+      <input class="inp" id="fMin" type="number" placeholder="Tiền từ (₫)" style="max-width:120px" oninput="applyRevFilter()">
+      <input class="inp" id="fMax" type="number" placeholder="đến (₫)" style="max-width:120px" oninput="applyRevFilter()">
+      <button class="btn sm gray" onclick="resetRevFilter()">Tất cả</button>
+    </div>
+    <div style="font-size:13px; font-weight:700; color:var(--mintD); margin-bottom:8px;" id="fSummary"></div>
     <button class="btn green" onclick="location.href='/api/admin/revenue.xlsx'">📥 Xuất Excel</button>
     <table style="margin-top:10px"><thead><tr><th>Mã đơn</th><th>Email</th><th>Gói</th><th>Số tiền</th><th>Kênh</th><th>Trạng thái</th><th>Thời gian</th></tr></thead>
     <tbody id="rBody"></tbody></table>
@@ -158,11 +179,37 @@ async function loadUsers(){
 async function setPlan(id){ await api("/api/admin/users/"+id+"/plan","POST",{plan:$("pl"+id).value}); loadUsers(); }
 
 /* ---- Doanh thu ---- */
+let revRows=[];
 async function loadRev(){
   const d=await api("/api/admin/revenue");
   $("rToday").textContent=vnd(d.totals.today); $("rMonth").textContent=vnd(d.totals.month);
   $("rAll").textContent=vnd(d.totals.all); $("rCount").textContent=d.totals.count;
-  $("rBody").innerHTML=d.rows.map(r=>
+  revRows=d.rows;
+  applyRevFilter();
+}
+function resetRevFilter(){
+  ["fPlan","fStatus","fFrom","fTo","fMin","fMax"].forEach(id=>$(id).value="");
+  applyRevFilter();
+}
+function applyRevFilter(){
+  const plan=$("fPlan").value, st=$("fStatus").value;
+  const from=$("fFrom").value, to=$("fTo").value;
+  const min=parseInt($("fMin").value,10), max=parseInt($("fMax").value,10);
+  const rows=revRows.filter(r=>{
+    if(plan && (r.plan||"")!==plan) return false;
+    if(st && r.status!==st) return false;
+    const day=String(r.created_at||"").slice(0,10);
+    if(from && day<from) return false;
+    if(to && day>to) return false;
+    if(!isNaN(min) && Number(r.amount)<min) return false;
+    if(!isNaN(max) && Number(r.amount)>max) return false;
+    return true;
+  });
+  const paidSum=rows.filter(r=>r.status==="paid").reduce((s,r)=>s+Number(r.amount||0),0);
+  const paidCount=rows.filter(r=>r.status==="paid").length;
+  $("fSummary").textContent="Bộ lọc: "+rows.length+"/"+revRows.length+" đơn · "
+    +paidCount+" đơn paid · Doanh thu theo bộ lọc: "+vnd(paidSum);
+  $("rBody").innerHTML=rows.map(r=>
     '<tr><td>'+r.order_code+'</td><td>'+esc(r.email)+'</td><td>'+esc(r.plan||"")+'</td><td>'+vnd(r.amount)+'</td><td>'+esc(r.channel)+'</td>'+
     '<td><span class="pill '+(r.status==="paid"?"on":"off")+'">'+esc(r.status)+'</span></td><td>'+esc(r.created_at)+'</td></tr>').join("");
 }
