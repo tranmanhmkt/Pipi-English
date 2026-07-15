@@ -163,3 +163,12 @@ Có `DATABASE_URL` → hệ thống tự dùng Supabase Postgres (tài khoản, 
 4. Deploy lại → log hiện `Lưu trữ: SUPABASE POSTGRES ☁️ (vĩnh viễn)` và `🌱 Đã nạp nội dung mẫu vào Supabase` là xong. Bảng tự tạo, nội dung 105 unit tự nạp lần đầu.
 
 ⚠️ Dữ liệu SQLite cũ (nếu có tài khoản test) sẽ không tự chuyển sang — Supabase bắt đầu sạch. Nên bật Supabase NGAY TRƯỚC khi có khách thật.
+
+## 15. (FIX) Hết lỗi 502 sau thời gian không truy cập
+
+Nguyên nhân kép đã sửa trong `server.js`:
+1. **Keep-alive lệch pha**: Node mặc định đóng kết nối rảnh sau 5s, ngắn hơn proxy của Render → proxy tái sử dụng kết nối đã chết → 502. Đã nâng `keepAliveTimeout=120s`, `headersTimeout=121s`.
+2. **Kết nối Supabase chết ngầm**: pooler Supabase cắt kết nối rảnh; lỗi trên kết nối rảnh không được bắt làm sập app → Render restart → 502. Đã: tự dọn kết nối rảnh sau 30s, bắt sự kiện lỗi pool, tự thử lại 1 lần khi gặp kết nối chết, và thêm lưới an toàn chống crash.
+
+**Việc bạn cần làm với UptimeRobot:** đổi URL monitor từ trang chủ sang
+`https://ten-app.onrender.com/health` (chu kỳ 5 phút) — endpoint này chạm cả database nên giữ ấm toàn bộ đường đi, không chỉ file tĩnh.

@@ -35,12 +35,26 @@ if (usePg) {
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
     max: 5,
+    idleTimeoutMillis: 30000,        // tự đóng kết nối rảnh sau 30s (trước khi Supabase cắt)
+    connectionTimeoutMillis: 10000,
+    keepAlive: true,
   });
+  /* Kết nối rảnh bị Supabase cắt sẽ bắn lỗi — không bắt là SẬP cả app → 502 */
+  pool.on("error", err => console.error("PG idle error (đã bắt, app vẫn chạy):", err.message));
   q = async (sql, params = []) => {
     let i = 0;
     const text = sql.replace(/\?/g, () => "$" + (++i));
-    const r = await pool.query(text, params);
-    return r.rows;
+    try {
+      const r = await pool.query(text, params);
+      return r.rows;
+    } catch (err) {
+      // Kết nối cũ vừa chết → thử lại 1 lần với kết nối mới
+      if (/terminat|ECONNRESET|Connection ended|timeout exceeded/i.test(err.message || "")) {
+        const r = await pool.query(text, params);
+        return r.rows;
+      }
+      throw err;
+    }
   };
 } else {
   const Database = require("better-sqlite3");
@@ -194,6 +208,12 @@ function adminOnly(req, res, next) {
     next();
   });
 }
+
+/* Health check: UptimeRobot trỏ vào đây (chạm cả DB để giữ kết nối ấm) */
+app.get("/health", ah(async (req, res) => {
+  await q("SELECT 1");
+  res.json({ ok: true, db: usePg ? "supabase" : "sqlite", t: Date.now() });
+}));
 
 /* ---------- Public ---------- */
 app.get("/api/config", ah(async (req, res) =>
@@ -462,12 +482,19 @@ app.delete("/api/admin/word/:id", adminOnly, ah(async (req, res) => {
 }));
 
 /* ---------- Khởi động ---------- */
+process.on("unhandledRejection", err => console.error("UnhandledRejection (đã bắt):", err && err.message || err));
+process.on("uncaughtException", err => console.error("UncaughtException (đã bắt):", err && err.message || err));
+
 initDb().then(() => {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log("🐥 PiPi English v3 chạy tại " + BASE_URL);
     console.log("   Lưu trữ:        " + (usePg ? "SUPABASE POSTGRES ☁️ (vĩnh viễn)" : "SQLite file (local)"));
     console.log("   Google Sign-In: " + (GOOGLE_CLIENT_ID ? "BẬT" : "TẮT"));
     console.log("   SePay:          " + (sepayOn ? "BẬT (QR thật)" : "chưa cấu hình"));
     console.log("   Admin:          " + (ADMIN_EMAILS.length ? ADMIN_EMAILS.join(", ") : "CHƯA ĐẶT ADMIN_EMAILS"));
   });
+  /* Proxy của Render giữ kết nối lâu hơn 5s mặc định của Node —
+     Node đóng trước → proxy dùng lại kết nối chết → 502. Nâng lên 120s. */
+  server.keepAliveTimeout = 120000;
+  server.headersTimeout = 121000; // luôn phải > keepAliveTimeout
 }).catch(err => { console.error("❌ Không kết nối được CSDL:", err.message); process.exit(1); });
