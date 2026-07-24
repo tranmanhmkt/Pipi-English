@@ -934,9 +934,14 @@ function speak(text){
 }
 /* Hình minh họa: trường img của mỗi từ nhận EMOJI hoặc ĐƯỜNG DẪN ẢNH
    (vd "images/cat.png" hoặc "https://.../cat.jpg") — web tự nhận diện và hiển thị. */
+/* Thoát ký tự đặc biệt khi nhúng dữ liệu vào HTML — chống vỡ giao diện vì ' " & < > */
+function h(s){
+  return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
 function imgHTML(w){
   return /[.\/]/.test(w.img)
-    ? '<img class="wimg" src="'+w.img+'" alt="'+w.en+'">'
+    ? '<img class="wimg" src="'+h(w.img)+'" alt="'+h(w.en)+'">'
     : w.img;
 }
 function flowerBurst(el){ // gà con tung hoa quanh ô
@@ -1049,7 +1054,7 @@ function renderHome(){
     const b=document.createElement("button");
     b.className="gradeCard";
     b.innerHTML=`<div class="gradeIcon">${g.icon}</div>
-      <div><div class="gradeName">${g.grade}</div>
+      <div><div class="gradeName">${h(g.grade)}</div>
       <div class="gradeSub">${g.units.length} units · ${earned}/${total} activities</div></div>`;
     b.onclick=()=>{ cur.g=gi; renderUnits(); go("unitScreen"); };
     grid.appendChild(b);
@@ -1068,8 +1073,8 @@ function renderUnits(){
     b.className="unitCard";
     b.innerHTML=`<div class="unitEmoji">${u.emoji}</div>
       <div class="unitInfo">
-        <div class="unitName">${u.name} <span class="badge ${u.pro?'pro':'free'}">${u.pro?'PRO':'FREE'}</span></div>
-        <div class="unitWords">${u.words.map(w=>w.en).join(" · ")}</div>
+        <div class="unitName">${h(u.name)} <span class="badge ${u.pro?'pro':'free'}">${u.pro?'PRO':'FREE'}</span></div>
+        <div class="unitWords">${u.words.map(w=>h(w.en)).join(" · ")}</div>
       </div>
       <div class="unitStars">${canPlayUnit(cur.g,ui,u)? stars+'⭐' : '🔒'}</div>`;
     b.onclick=()=>{
@@ -1156,9 +1161,9 @@ function renderFlash(){
   $("actCard").innerHTML=`
     <div class="flashcard pop">
       <div class="flashEmoji">${imgHTML(w)}</div>
-      <div class="enWord">${w.en}</div>
+      <div class="enWord">${h(w.en)}</div>
       <div class="ipa">${w.ipa||IPA[w.en]||""}</div>
-      <button class="speak" onclick="speak('${w.en}')">🔊</button>
+      <button class="speak" onclick="speak(this.dataset.w)" data-w="${h(w.en)}">🔊</button>
     </div>
     <div style="display:flex; gap:12px;">
       ${session.round>0?'<button class="btn ghost" onclick="flashPrev()">◀ Back</button>':''}
@@ -1180,8 +1185,8 @@ function renderListen(){
   const opts=shuffle([w, ...shuffle(session.words.filter(x=>x!==w)).slice(0,3)]);
   $("actCard").innerHTML=`
     <div class="hint">Listen and choose the picture</div>
-    <button class="speak big" onclick="speak('${w.en}')">🔊</button>
-    <div class="optGrid">${opts.map(o=>`<button class="optCard" data-en="${o.en}">${imgHTML(o)}</button>`).join("")}</div>
+    <button class="speak big" onclick="speak(this.dataset.w)" data-w="${h(w.en)}">🔊</button>
+    <div class="optGrid">${opts.map(o=>`<button class="optCard" data-en="${h(o.en)}">${imgHTML(o)}</button>`).join("")}</div>
     <div class="feedback" id="fb"></div>`;
   document.querySelectorAll(".optCard").forEach(b=>{
     b.onclick=()=>pickListen(b, b.dataset.en===w.en, w);
@@ -1289,11 +1294,11 @@ function renderAnagram(){
   setProgress(session.round, session.words.length);
   const ipaTxt=w.ipa||IPA[w.en]||"";
   $("actCard").innerHTML=`
-    <button class="speak" onclick="speak('${w.en}')">🔊</button>
+    <button class="speak" onclick="speak(this.dataset.w)" data-w="${h(w.en)}">🔊</button>
     <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center;">
       <div class="emoji">${imgHTML(w)}</div>
       <div style="text-align:center;">
-        <div class="enWord">${w.en}</div>
+        <div class="enWord">${h(w.en)}</div>
         <div class="ipa">${ipaTxt}</div>
       </div>
     </div>
@@ -1397,10 +1402,10 @@ function renderQuiz(){
   const others=shuffle(session.words.filter(x=>x!==w)).slice(0,3);
   const opts=shuffle([w,...others]);
   $("actCard").innerHTML=`
-    <button class="speak" onclick="speak('${w.en}')">🔊</button>
-    <div class="enWord">${w.en}</div>
+    <button class="speak" onclick="speak(this.dataset.w)" data-w="${h(w.en)}">🔊</button>
+    <div class="enWord">${h(w.en)}</div>
     <div class="ipa">${w.ipa||IPA[w.en]||""}</div>
-    <div class="optGrid">${opts.map(o=>`<button class="optCard" data-en="${o.en}">${imgHTML(o)}</button>`).join("")}</div>
+    <div class="optGrid">${opts.map(o=>`<button class="optCard" data-en="${h(o.en)}">${imgHTML(o)}</button>`).join("")}</div>
     <div class="feedback" id="fb"></div>`;
   setTimeout(()=>speak(w.en),300);
   document.querySelectorAll(".optCard").forEach(b=>{
@@ -1495,7 +1500,7 @@ function renderTypingWord(){
   setProgress(session.idx, session.words.length);
   const showWord = session.mode==="key";
   $("actCard").innerHTML=
-    '<button class="speak" onclick="speak(\''+w.en+'\')">🔊</button>'+
+    '<button class="speak" onclick="speak(this.dataset.w)" data-w="'+h(w.en)+'">🔊</button>'+
     '<div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center;">'+
       '<div class="emoji">'+imgHTML(w)+'</div>'+
       '<div style="text-align:center;">'+
@@ -1796,7 +1801,7 @@ function showGradePick(){
   CURRICULUM.forEach((g,gi)=>{
     const b=document.createElement("button");
     b.className="gradePickBtn";
-    b.innerHTML='<span class="gpIcon">'+g.icon+'</span><span>'+g.grade+'</span>'+
+    b.innerHTML='<span class="gpIcon">'+h(g.icon)+'</span><span>'+h(g.grade)+'</span>'+
                 '<span class="gpSub">'+g.units.length+' units</span>';
     b.onclick=()=>pickBasicGrade(gi, g.grade);
     list.appendChild(b);

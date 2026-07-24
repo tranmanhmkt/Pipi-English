@@ -139,7 +139,7 @@ td .inp{min-width:70px;}
 
 <script>
 const $=id=>document.getElementById(id);
-const esc=s=>String(s??"").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 async function api(url,method,body){
   const r=await fetch(url,{method:method||"GET",headers:{"Content-Type":"application/json"},
     credentials:"same-origin",body:body?JSON.stringify(body):undefined});
@@ -223,7 +223,7 @@ function applyRevFilter(){
 let curGrade=null, curUnit=null;
 function crumb(){
   let h='<a onclick="loadGrades()">📚 Các lớp</a>';
-  if(curGrade) h+=' › <a onclick="loadUnits(curGrade.id, curGrade.name)">'+esc(curGrade.name)+'</a>';
+  if(curGrade) h+=' › <a onclick="loadUnits(curGrade.id)">'+esc(curGrade.name)+'</a>';
   if(curUnit) h+=' › '+esc(curUnit.name);
   $("crumb").innerHTML=h;
 }
@@ -231,24 +231,32 @@ async function loadGrades(){
   curGrade=null;curUnit=null;crumb();
   $("cGrades").classList.remove("hidden"); $("cUnits").classList.add("hidden"); $("cWords").classList.add("hidden");
   const d=await api("/api/admin/content");
+  gradesCache=d.grades;
   $("cGrades").innerHTML='<button class="btn sm green" onclick="addGrade()">+ Thêm lớp</button>'+
     '<table><thead><tr><th>Icon</th><th>Tên lớp</th><th></th></tr></thead><tbody>'+
     d.grades.map(g=>'<tr>'+
       '<td style="width:70px"><input class="inp" id="gi'+g.id+'" value="'+esc(g.icon)+'"></td>'+
       '<td><input class="inp" id="gn'+g.id+'" value="'+esc(g.name)+'"></td>'+
       '<td style="white-space:nowrap"><button class="btn sm" onclick="saveGrade('+g.id+')">Lưu</button> '+
-      '<button class="btn sm green" onclick=\'loadUnits('+g.id+',"'+esc(g.name)+'")\'>Unit ▶</button> '+
+      '<button class="btn sm green" onclick="loadUnits('+g.id+')">Unit ▶</button> '+
       '<button class="btn sm gray" onclick="delGrade('+g.id+')">Xóa</button></td></tr>').join("")+'</tbody></table>';
 }
 async function addGrade(){ await api("/api/admin/grade","POST",{name:"Grade mới",icon:"🐣"}); loadGrades(); }
 async function saveGrade(id){ await api("/api/admin/grade/"+id,"PATCH",{name:$("gn"+id).value,icon:$("gi"+id).value}); }
 async function delGrade(id){ if(confirm("Xóa lớp này và TOÀN BỘ unit + từ bên trong?")){ await api("/api/admin/grade/"+id,"DELETE"); loadGrades(); } }
 
+let gradesCache=[], unitsCache=[];
 async function loadUnits(gid,gname){
+  if(gname===undefined){
+    const g=(gradesCache||[]).find(x=>String(x.id)===String(gid));
+    gname=g?g.name:"";
+  }
   curGrade={id:gid,name:gname};curUnit=null;crumb();
   $("cGrades").classList.add("hidden"); $("cUnits").classList.remove("hidden"); $("cWords").classList.add("hidden");
   const d=await api("/api/admin/units/"+gid);
-  $("cUnits").innerHTML='<button class="btn sm green" onclick="addUnit()">+ Thêm unit</button>'+
+  unitsCache=d.units;
+  $("cUnits").innerHTML='<button class="btn sm gray" onclick="loadGrades()">← Quay lại</button> '+
+    '<button class="btn sm green" onclick="addUnit()">+ Thêm unit</button>'+
     '<table><thead><tr><th>Emoji</th><th>Tên unit</th><th>Mô tả</th><th>PRO</th><th></th></tr></thead><tbody>'+
     d.units.map(u=>'<tr>'+
       '<td style="width:70px"><input class="inp" id="ue'+u.id+'" value="'+esc(u.emoji)+'"></td>'+
@@ -256,18 +264,23 @@ async function loadUnits(gid,gname){
       '<td><input class="inp" id="ud'+u.id+'" value="'+esc(u.description)+'"></td>'+
       '<td style="width:50px;text-align:center"><input type="checkbox" id="up'+u.id+'" '+(u.pro?"checked":"")+'></td>'+
       '<td style="white-space:nowrap"><button class="btn sm" onclick="saveUnit('+u.id+')">Lưu</button> '+
-      '<button class="btn sm green" onclick=\'loadWords('+u.id+',"'+esc(u.name)+'")\'>Từ ▶</button> '+
+      '<button class="btn sm green" onclick="loadWords('+u.id+')">Từ ▶</button> '+
       '<button class="btn sm gray" onclick="delUnit('+u.id+')">Xóa</button></td></tr>').join("")+'</tbody></table>';
 }
-async function addUnit(){ await api("/api/admin/unit","POST",{grade_id:curGrade.id,name:"Unit mới",emoji:"⭐",pro:1}); loadUnits(curGrade.id,curGrade.name); }
+async function addUnit(){ await api("/api/admin/unit","POST",{grade_id:curGrade.id,name:"Unit mới",emoji:"⭐",pro:1}); loadUnits(curGrade.id); }
 async function saveUnit(id){ await api("/api/admin/unit/"+id,"PATCH",{name:$("un"+id).value,emoji:$("ue"+id).value,description:$("ud"+id).value,pro:$("up"+id).checked?1:0}); }
-async function delUnit(id){ if(confirm("Xóa unit này và toàn bộ từ bên trong?")){ await api("/api/admin/unit/"+id,"DELETE"); loadUnits(curGrade.id,curGrade.name); } }
+async function delUnit(id){ if(confirm("Xóa unit này và toàn bộ từ bên trong?")){ await api("/api/admin/unit/"+id,"DELETE"); loadUnits(curGrade.id); } }
 
 async function loadWords(uid,uname){
+  if(uname===undefined){
+    const u=(unitsCache||[]).find(x=>String(x.id)===String(uid));
+    uname=u?u.name:"";
+  }
   curUnit={id:uid,name:uname};crumb();
   $("cGrades").classList.add("hidden"); $("cUnits").classList.add("hidden"); $("cWords").classList.remove("hidden");
   const d=await api("/api/admin/words/"+uid);
-  $("cWords").innerHTML='<button class="btn sm green" onclick="addWord()">+ Thêm từ</button>'+
+  $("cWords").innerHTML='<button class="btn sm gray" onclick="loadUnits(curGrade.id)">← Quay lại</button> '+
+    '<button class="btn sm green" onclick="addWord()">+ Thêm từ</button>'+
     '<p style="font-size:12px;opacity:.7;margin:6px 0">Hình ảnh: emoji, link ảnh, bấm 📤 chọn file, HOẶC bấm vào ô rồi Ctrl+V để dán ảnh copy từ trình duyệt — ảnh tự nén, tự lưu, lưu vĩnh viễn trong database. Âm thanh: link file mp3 (bỏ trống = dùng giọng đọc máy).</p>'+
     '<table><thead><tr><th>Từ (EN)</th><th>Nghĩa (VI)</th><th>Phiên âm IPA</th><th>Hình ảnh</th><th>Âm thanh (mp3)</th><th></th></tr></thead><tbody>'+
     d.words.map(w=>'<tr>'+
@@ -341,9 +354,9 @@ document.addEventListener("paste", e=>{
     }
   }
 });
-async function addWord(){ await api("/api/admin/word","POST",{unit_id:curUnit.id,en:"new word",vi:"",ipa:"",img:"⭐"}); loadWords(curUnit.id,curUnit.name); }
+async function addWord(){ await api("/api/admin/word","POST",{unit_id:curUnit.id,en:"new word",vi:"",ipa:"",img:"⭐"}); loadWords(curUnit.id); }
 async function saveWord(id){ await api("/api/admin/word/"+id,"PATCH",{en:$("we"+id).value,vi:$("wv"+id).value,ipa:$("wi"+id).value,img:$("wm"+id).value,audio:$("wa"+id).value}); }
-async function delWord(id){ if(confirm("Xóa từ này?")){ await api("/api/admin/word/"+id,"DELETE"); loadWords(curUnit.id,curUnit.name); } }
+async function delWord(id){ if(confirm("Xóa từ này?")){ await api("/api/admin/word/"+id,"DELETE"); loadWords(curUnit.id); } }
 
 /* ---- Cài đặt ---- */
 async function loadSettings(){

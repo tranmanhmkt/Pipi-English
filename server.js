@@ -354,7 +354,7 @@ app.post("/api/pay/create", auth, ah(async (req, res) => {
 
 app.get("/api/pay/status", auth, ah(async (req, res) => {
   const p = await one("SELECT status FROM payments WHERE order_code=? AND user_id=?",
-    [Number(req.query.oc), req.user.id]);
+    [parseInt(req.query.oc, 10) || 0, req.user.id]);
   res.json({ paid: !!(p && p.status === "paid") });
 }));
 
