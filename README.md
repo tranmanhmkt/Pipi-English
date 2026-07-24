@@ -172,3 +172,11 @@ Nguyên nhân kép đã sửa trong `server.js`:
 
 **Việc bạn cần làm với UptimeRobot:** đổi URL monitor từ trang chủ sang
 `https://ten-app.onrender.com/health` (chu kỳ 5 phút) — endpoint này chạm cả database nên giữ ấm toàn bộ đường đi, không chỉ file tĩnh.
+
+## 16. (MỚI) Tải ảnh minh họa ngay trong Admin
+
+Tab **Nội dung → Từ**: cột Hình ảnh giờ có ô xem trước + nút **📤**:
+- Bấm 📤 chọn file ảnh từ máy, HOẶC **bấm vào ô rồi Ctrl+V** dán ảnh vừa copy từ trình duyệt/Google Images.
+- Ảnh tự nén về ≤512px (nhẹ ~30–80KB), tự lưu, và **lưu vĩnh viễn trong database Supabase** (không mất khi redeploy) dưới đường dẫn dạng `/img/123`.
+- Vẫn điền tay emoji hoặc link ảnh ngoài như cũ nếu muốn.
+⚠️ Lưu ý bản quyền: chỉ dùng ảnh bạn có quyền sử dụng (tự vẽ, mua, hoặc kho miễn phí có ghi công) — tránh copy ảnh bất kỳ trên mạng cho sản phẩm thương mại.

@@ -102,6 +102,7 @@ async function initDb() {
     description TEXT DEFAULT '', pro INTEGER DEFAULT 0, sort INTEGER DEFAULT 0)`);
   await q(`CREATE TABLE IF NOT EXISTS words(id ${D.id}, unit_id INTEGER,
     en TEXT, vi TEXT DEFAULT '', ipa TEXT DEFAULT '', img TEXT DEFAULT '', audio TEXT DEFAULT '', sort INTEGER DEFAULT 0)`);
+  await q(`CREATE TABLE IF NOT EXISTS images(id ${D.id}, mime TEXT, data TEXT)`);
 
   /* Nâng cấp CSDL SQLite cũ (Postgres tạo mới đã đủ cột) */
   if (!usePg) {
@@ -166,7 +167,7 @@ async function prices() {
 
 /* ================= APP ================= */
 const app = express();
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "3mb" }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "public", "admin.html")));
@@ -213,6 +214,23 @@ function adminOnly(req, res, next) {
 app.get("/health", ah(async (req, res) => {
   await q("SELECT 1");
   res.json({ ok: true, db: usePg ? "supabase" : "sqlite", t: Date.now() });
+}));
+
+/* Ảnh đã tải lên (lưu trong DB) */
+app.get("/img/:id", ah(async (req, res) => {
+  const im = await one("SELECT mime,data FROM images WHERE id=?", [parseInt(req.params.id, 10) || 0]);
+  if (!im) return res.status(404).end();
+  res.setHeader("Content-Type", im.mime);
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  res.end(Buffer.from(im.data, "base64"));
+}));
+app.post("/api/admin/upload", adminOnly, ah(async (req, res) => {
+  const dataUrl = req.body.dataUrl || "";
+  const m = dataUrl.match(/^data:(image\/(?:png|jpe?g|webp|gif));base64,([A-Za-z0-9+/=]+)$/);
+  if (!m) return res.status(400).json({ error: "Ảnh không hợp lệ" });
+  if (m[2].length > 1200000) return res.status(400).json({ error: "Ảnh quá lớn (tối đa ~800KB)" });
+  const r = await one("INSERT INTO images(mime,data) VALUES(?,?) RETURNING id", [m[1], m[2]]);
+  res.json({ url: "/img/" + r.id });
 }));
 
 /* ---------- Public ---------- */

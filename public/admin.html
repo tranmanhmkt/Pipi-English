@@ -36,6 +36,11 @@ th{font-size:12px;text-transform:uppercase;opacity:.6;}
 #loginBox{max-width:360px;margin:60px auto;text-align:center;}
 .msg{min-height:20px;font-size:13px;font-weight:700;color:#F0716B;}
 td .inp{min-width:70px;}
+.imgCell{display:flex; gap:6px; align-items:center;}
+.imgPrev{font-size:24px; min-width:38px; text-align:center;}
+.imgPrev img{width:36px; height:36px; object-fit:contain; border-radius:8px; border:1px solid #F3E3EC; vertical-align:middle;}
+.imgInp{min-width:100px;}
+.upBtn{padding:6px 10px !important;}
 </style>
 </head>
 <body>
@@ -263,17 +268,79 @@ async function loadWords(uid,uname){
   $("cGrades").classList.add("hidden"); $("cUnits").classList.add("hidden"); $("cWords").classList.remove("hidden");
   const d=await api("/api/admin/words/"+uid);
   $("cWords").innerHTML='<button class="btn sm green" onclick="addWord()">+ Thêm từ</button>'+
-    '<p style="font-size:12px;opacity:.7;margin:6px 0">Hình ảnh: điền emoji HOẶC link ảnh (https://...). Âm thanh: link file mp3 (bỏ trống = dùng giọng đọc máy).</p>'+
+    '<p style="font-size:12px;opacity:.7;margin:6px 0">Hình ảnh: emoji, link ảnh, bấm 📤 chọn file, HOẶC bấm vào ô rồi Ctrl+V để dán ảnh copy từ trình duyệt — ảnh tự nén, tự lưu, lưu vĩnh viễn trong database. Âm thanh: link file mp3 (bỏ trống = dùng giọng đọc máy).</p>'+
     '<table><thead><tr><th>Từ (EN)</th><th>Nghĩa (VI)</th><th>Phiên âm IPA</th><th>Hình ảnh</th><th>Âm thanh (mp3)</th><th></th></tr></thead><tbody>'+
     d.words.map(w=>'<tr>'+
       '<td><input class="inp" id="we'+w.id+'" value="'+esc(w.en)+'"></td>'+
       '<td><input class="inp" id="wv'+w.id+'" value="'+esc(w.vi)+'"></td>'+
       '<td><input class="inp" id="wi'+w.id+'" value="'+esc(w.ipa)+'"></td>'+
-      '<td><input class="inp" id="wm'+w.id+'" value="'+esc(w.img)+'"></td>'+
+      '<td style="min-width:190px"><div class="imgCell">'+
+        '<span class="imgPrev" id="wp'+w.id+'">'+imgPrev(w.img)+'</span>'+
+        '<input class="inp imgInp" id="wm'+w.id+'" value="'+esc(w.img)+'" oninput="refreshPrev('+w.id+')">'+
+        '<button class="btn sm upBtn" onclick="pickImg('+w.id+')" title="Tải ảnh lên (hoặc bấm vào ô rồi Ctrl+V dán ảnh)">📤</button>'+
+      '</div></td>'+
       '<td><input class="inp" id="wa'+w.id+'" value="'+esc(w.audio)+'"></td>'+
       '<td style="white-space:nowrap"><button class="btn sm" onclick="saveWord('+w.id+')">Lưu</button> '+
       '<button class="btn sm gray" onclick="delWord('+w.id+')">Xóa</button></td></tr>').join("")+'</tbody></table>';
 }
+function imgPrev(v){
+  v=v||"";
+  return /[.\/]/.test(v) ? '<img src="'+esc(v)+'" alt="">' : esc(v);
+}
+function refreshPrev(id){ $("wp"+id).innerHTML=imgPrev($("wm"+id).value); }
+function shrinkImage(file){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=512;
+      const k=Math.min(1, max/Math.max(img.width, img.height));
+      const c=document.createElement("canvas");
+      c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      let out=c.toDataURL("image/webp",0.9);
+      if(!out.startsWith("data:image/webp")) out=c.toDataURL("image/png"); // trình duyệt cũ
+      res(out);
+    };
+    img.onerror=rej;
+    img.src=URL.createObjectURL(file);
+  });
+}
+async function handleImageFile(file, id){
+  if(!file || !file.type.startsWith("image/")) return;
+  const btn=document.querySelector('button[onclick="pickImg('+id+')"]');
+  if(btn) btn.textContent="⏳";
+  try{
+    const dataUrl=await shrinkImage(file);
+    const d=await api("/api/admin/upload","POST",{dataUrl});
+    $("wm"+id).value=d.url;
+    refreshPrev(id);
+    await saveWord(id);           // tự lưu luôn
+    if(btn){ btn.textContent="✓"; setTimeout(()=>btn.textContent="📤",1500); }
+  }catch(e){
+    alert(e.message);
+    if(btn) btn.textContent="📤";
+  }
+}
+function pickImg(id){
+  const inp=document.createElement("input");
+  inp.type="file"; inp.accept="image/*";
+  inp.onchange=()=>handleImageFile(inp.files[0], id);
+  inp.click();
+}
+/* Dán ảnh (Ctrl+V) khi con trỏ đang ở ô Hình ảnh */
+document.addEventListener("paste", e=>{
+  const el=document.activeElement;
+  if(!el || !el.id || el.id.slice(0,2)!=="wm") return;
+  const items=e.clipboardData && e.clipboardData.items;
+  if(!items) return;
+  for(const it of items){
+    if(it.type && it.type.startsWith("image/")){
+      e.preventDefault();
+      handleImageFile(it.getAsFile(), el.id.slice(2));
+      return;
+    }
+  }
+});
 async function addWord(){ await api("/api/admin/word","POST",{unit_id:curUnit.id,en:"new word",vi:"",ipa:"",img:"⭐"}); loadWords(curUnit.id,curUnit.name); }
 async function saveWord(id){ await api("/api/admin/word/"+id,"PATCH",{en:$("we"+id).value,vi:$("wv"+id).value,ipa:$("wi"+id).value,img:$("wm"+id).value,audio:$("wa"+id).value}); }
 async function delWord(id){ if(confirm("Xóa từ này?")){ await api("/api/admin/word/"+id,"DELETE"); loadWords(curUnit.id,curUnit.name); } }
