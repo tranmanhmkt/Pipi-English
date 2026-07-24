@@ -161,8 +161,8 @@ body{
 .speak.big{width:100px; height:100px; font-size:46px;}
 
 .emoji{
-  font-size:72px; line-height:1; background:linear-gradient(180deg,#FFF6DE,#FFE9B8);
-  border-radius:24px; padding:14px 20px; box-shadow:inset 0 -4px 0 rgba(32,53,92,.08);
+  font-size:96px; line-height:1; background:linear-gradient(180deg,#FFF6DE,#FFE9B8);
+  border-radius:26px; padding:16px 24px; box-shadow:inset 0 -4px 0 rgba(32,53,92,.08);
 }
 .meaning{font-size:clamp(26px,5.5vw,40px); font-weight:800; text-align:center;}
 .hint{font-size:14px; font-weight:600; opacity:.55; text-align:center;}
@@ -192,13 +192,13 @@ body{
   box-shadow:0 8px 0 rgba(32,53,92,.10); padding:26px 20px;
   display:flex; flex-direction:column; align-items:center; gap:10px;
 }
-.flashEmoji{font-size:96px; line-height:1.1;}
+.flashEmoji{font-size:132px; line-height:1.1;}
 
 /* Nghe chọn tranh */
-.optGrid{display:grid; grid-template-columns:repeat(2,minmax(120px,160px)); gap:14px; justify-content:center;}
+.optGrid{display:grid; grid-template-columns:repeat(2,minmax(150px,195px)); gap:14px; justify-content:center;}
 .optCard{
   border:none; cursor:pointer; font-family:inherit;
-  background:var(--slot); border-radius:22px; padding:18px 10px; font-size:56px;
+  background:var(--slot); border-radius:22px; padding:20px 10px; font-size:78px;
   box-shadow:0 5px 0 var(--slot-border); transition:transform .08s;
 }
 .optCard:active{transform:translateY(3px);}
@@ -311,12 +311,12 @@ body{
   border-radius:14px; padding:8px 14px; text-align:center; opacity:.85;
 }
 
-img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; border-radius:10px;}
+img.wimg{width:1.12em; height:1.12em; object-fit:contain; vertical-align:-0.16em; border-radius:12px;}
 .pairCols{display:flex; gap:26px; justify-content:center; width:100%;}
 .pairRow{display:flex; flex-direction:column; gap:12px;}
-.pairRow .pairCard{height:78px; width:170px; min-height:0; padding:6px;}
-@media (max-width:480px){ .pairRow .pairCard{width:140px; height:70px;} .pairCols{gap:14px;} }
-.imgCard .pe{font-size:42px;}
+.pairRow .pairCard{height:94px; width:182px; min-height:0; padding:6px;}
+@media (max-width:480px){ .pairRow .pairCard{width:150px; height:84px;} .pairCols{gap:12px;} .imgCard .pe{font-size:46px;} }
+.imgCard .pe{font-size:60px;}
 .wordCard{font-size:19px; min-width:86px;}
 .exampleRow{display:flex; align-items:center; gap:12px; justify-content:center;}
 .pairCard.example{cursor:default; background:#EAFBF3; box-shadow:0 4px 0 var(--tile); min-width:82px;}
@@ -368,8 +368,8 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
 @media (min-width:481px) and (max-width:900px){
   .screen{max-width:700px;}
   .key{min-width:50px; height:54px; font-size:21px;}
-  .optGrid{grid-template-columns:repeat(2, minmax(150px, 200px));}
-  .pairRow .pairCard{width:190px; height:82px;}
+  .optGrid{grid-template-columns:repeat(2, minmax(180px, 230px));}
+  .pairRow .pairCard{width:200px; height:98px;}
 }
 /* ===== Điện thoại ===== */
 @media (max-width:480px){
@@ -391,16 +391,16 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
   .mapItem{padding:11px 14px;}
   .mapNum{width:38px; height:38px; font-size:18px;}
   .mapName{font-size:16px;}
-  .emoji{font-size:52px; padding:10px 14px; border-radius:18px;}
+  .emoji{font-size:68px; padding:12px 16px; border-radius:20px;}
   .enWord{font-size:27px;}
   .ipa{font-size:15px;}
   .hint{font-size:12px;}
   .flashcard{padding:20px 16px;}
-  .flashEmoji{font-size:76px;}
+  .flashEmoji{font-size:100px;}
   .speak{width:52px; height:52px; font-size:23px;}
   .speak.big{width:82px; height:82px; font-size:36px;}
   .btn{font-size:17px; padding:12px 30px;}
-  .optCard{font-size:44px; padding:14px 8px; border-radius:18px;}
+  .optCard{font-size:60px; padding:16px 8px; border-radius:18px;}
   .quizOpts{grid-template-columns:repeat(2,1fr); gap:9px;}
   .quizOpt{font-size:16px; padding:12px;}
   .chunk{font-size:22px; padding:8px 11px; border-radius:10px; letter-spacing:1px;}
@@ -420,8 +420,8 @@ img.wimg{width:1em; height:1em; object-fit:contain; vertical-align:-0.12em; bord
 /* Màn hình rất nhỏ (<360px) */
 @media (max-width:359px){
   .key{min-width:26px; height:38px; font-size:14px;}
-  .pairRow .pairCard{width:124px; height:64px;}
-  .imgCard .pe{font-size:32px;}
+  .pairRow .pairCard{width:132px; height:74px;}
+  .imgCard .pe{font-size:38px;}
   .wordCard{font-size:15px;}
 }
 /* ===== Tài khoản & thanh toán ===== */
